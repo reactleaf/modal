@@ -1,0 +1,39 @@
+{
+  "name": "@reactleaf/react-modal",
+  "version": "0.0.1",
+  "description": "React Modal Library with context",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reactleaf/react-modal.git"
+  },
+  "keywords": [
+    "react",
+    "modal",
+    "context",
+    "popup"
+  ],
+  "author": "Hyeonseok Yang<FourwingsY@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/reactleaf/react-modal/issues"
+  },
+  "homepage": "https://github.com/reactleaf/react-modal#readme",
+  "devDependencies": {
+    "@types/react": "^17.0.24",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "react": "^15.0.0 || ^16 || ^17",
+    "react-dom": "^15.0.0 || ^16 || ^17"
+  },
+  "peerDependencies": {
+    "react": "^15.0.0 || ^16 || ^17",
+    "react-dom": "^15.0.0 || ^16 || ^17"
+  }
+}
