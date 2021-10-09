@@ -1,6 +1,9 @@
 import React from "react";
 
-export type Importer = () => Promise<{ default: React.ComponentType<any> }>;
+interface ImportedModule {
+  default: React.ComponentType;
+}
+export type Importer = () => Promise<ImportedModule>;
 export interface Register {
   [key: string]: Importer;
 }

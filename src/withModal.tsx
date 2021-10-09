@@ -44,7 +44,7 @@ function bindActionCreator<A, C extends ActionCreator<A>>(
   return (...args: Parameters<C>) => dispatch(actionCreator(...args));
 }
 
-export const withModal = <R extends Register, P>(
+export const withModal = <R extends Register, P = unknown>(
   register: R,
   Component: React.ComponentType<P>
 ) => {
