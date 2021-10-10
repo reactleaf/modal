@@ -16,7 +16,7 @@ function App() {
     openModal({
       type: "Alert",
       props: { title: "This is Alert", message: "Hello" },
-      overlayOptions: { transitionDuration: 300 },
+      overlayOptions: { closeDelay: 300 },
     });
   }
 
@@ -36,7 +36,7 @@ function App() {
     openModal({
       type: "Slideup",
       props: { message: "Tada!" },
-      overlayOptions: { transitionDuration: 500 },
+      overlayOptions: { closeDelay: 500 },
     });
   }
 

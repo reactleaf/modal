@@ -58,6 +58,7 @@
 /* transition */
 .modal-overlay {
   opacity: 0;
+  transition: opacity 0.3s;
 }
 .modal-overlay.visible {
   opacity: 1;
