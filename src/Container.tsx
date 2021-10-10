@@ -25,9 +25,6 @@ function ModalContainer<R extends Register>({
     </div>
   );
 }
-interface ImportedModule {
-  default: React.ComponentType;
-}
 
 interface OpenedModalProps<R extends Register>
   extends EnhancedModalPayload<R, keyof R> {
@@ -47,7 +44,7 @@ function OpenedModal<R extends Register>({
   // this may trigger initial openModal could be delayed.
   // if you don't want to be delayed, use usePreloadModal hook
   useEffect(() => {
-    void importer().then((modal: ImportedModule) => {
+    void importer().then((modal) => {
       setComponent(() => modal.default);
     });
   }, [type]);
@@ -68,7 +65,7 @@ interface OverlayProps extends OverlayOptions {
 }
 const ModalOverlay: React.FC<OverlayProps> = ({
   dim = true,
-  closeDelay = 0,
+  transitionDuration = 0,
   closeOnOverlayClick = true,
   preventScroll = true,
   children,
@@ -80,7 +77,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
 
   function delayedClose() {
     setVisible(false);
-    setTimeout(closeSelf, closeDelay);
+    setTimeout(closeSelf, transitionDuration);
   }
 
   const onClick = (e: React.MouseEvent) => {
@@ -107,7 +104,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     <div
       className={className}
       onClick={onClick}
-      style={{ transitionDuration: `${closeDelay}ms` }}
+      style={{ transitionDuration: `${transitionDuration}ms` }}
     >
       {cloneElement(children, { close: delayedClose, visible })}
     </div>

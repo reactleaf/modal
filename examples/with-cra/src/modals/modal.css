@@ -46,10 +46,19 @@
   padding: 0 16px;
   background-color: #ccc;
   color: #000;
+  border: none;
 }
 .modal-buttons button:hover {
   background-color: #ddd;
 }
 .modal-buttons button:active {
   background-color: #eee;
+}
+
+/* transition */
+.modal-overlay {
+  opacity: 0;
+}
+.modal-overlay.visible {
+  opacity: 1;
 }

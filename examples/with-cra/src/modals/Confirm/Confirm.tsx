@@ -1,34 +1,45 @@
 import { BasicModalProps } from "@reactleaf/react-modal";
 import "../modal.css";
+import "./style.css";
 
-interface Props extends BasicModalProps {
+interface ConfirmProps extends BasicModalProps {
   title: string;
-  message: string;
+  message: string | React.ReactNode;
   confirmText?: string;
-  onConfirm?(): void;
+  cancelText?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }
-const Alert = ({
+
+const Confirm: React.FC<ConfirmProps> = ({
   title,
   message,
-  confirmText = "Confirm",
+  confirmText = "OK",
+  cancelText = "Cancel",
   onConfirm,
+  onCancel,
   close,
-}: Props) => {
+}) => {
   function handleConfirm() {
     onConfirm?.();
     close();
   }
+  function handleCancel() {
+    onCancel?.();
+    close();
+  }
   return (
-    <div className="alert modal">
+    <div className="confirm modal">
       <p className="modal-title">{title}</p>
       <div className="modal-body">
         <p className="message">{message}</p>
       </div>
       <div className="modal-buttons">
+        <button onClick={handleCancel}>{cancelText}</button>
         <button onClick={handleConfirm}>{confirmText}</button>
       </div>
     </div>
   );
 };
 
-export default Alert;
+export default Confirm;

@@ -18,7 +18,7 @@ export type EnhancedModalPayload<
 
 export interface OverlayOptions {
   dim?: boolean | string;
-  closeDelay?: number;
+  transitionDuration?: number;
   closeOnOverlayClick?: boolean;
   preventScroll?: boolean;
 }
@@ -85,7 +85,7 @@ export const withModal = <R extends Register, P = unknown>(
     }
   }
 
-  const WithModal = (props: P) => {
+  return function WithModal(props: P) {
     const [openedModals, dispatch] = useReducer(
       reducer,
       [] as EnhancedModalPayload<R, keyof R>[]
@@ -107,7 +107,6 @@ export const withModal = <R extends Register, P = unknown>(
       </TypedModalContext.Provider>
     );
   };
-  return WithModal;
 };
 
 /**

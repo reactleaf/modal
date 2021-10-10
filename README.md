@@ -56,6 +56,8 @@ for **type-safe** of your code, do not use useModal directly.
 
 #### Don't
 
+If you are non-typescript user, it's okay to use this way.
+
 ```typescript
 import { useModal } from "@reactleaf/react-modal";
 
