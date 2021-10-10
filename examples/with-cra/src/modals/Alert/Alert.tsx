@@ -1,4 +1,5 @@
-import { BasicModalProps } from "@reactleaf/react-modal/types";
+import { BasicModalProps } from "@reactleaf/react-modal";
+import "../modal.css";
 
 interface Props extends BasicModalProps {
   title: string;
