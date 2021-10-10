@@ -110,7 +110,12 @@ export const withModal = <R extends Register, P = unknown>(
   return WithModal;
 };
 
-// not recommended
+/**
+ * not recommended to use directly,
+ * use type-wrapped method
+ *
+ * const useModal = createModalHook<typeof register>()
+ */
 export const useModal = () => useContext(ModalContext);
 
 export const createModalHook = <R extends Register>() => {

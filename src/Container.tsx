@@ -99,7 +99,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     }
   }, []);
 
-  const className = [dim && "dim", visible && "visible"]
+  const className = ["modal-overlay", dim && "dim", visible && "visible"]
     .filter((e) => e)
     .join(" ");
 
