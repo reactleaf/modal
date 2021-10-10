@@ -105,3 +105,93 @@ function openAlert() {
                              property 'message' is missing
 }
 ```
+
+## Props
+
+#### withModal(register, App)
+
+- `register` - your modal register
+- `App` - your App
+- `returns` - Higher ordered App
+
+#### createModalHook<Register>()
+
+```typescript
+const useModal = createModalHook<typeof yourModalRegister>();
+```
+
+#### useModal()
+
+- `retuns` - { openModal, closeAll }
+
+#### openModal(payload)
+
+open selected typed modal with given props
+
+```typescript
+openModal({ type: keyof Register, props: Props, overlayOptions: OverlayOptions })
+```
+
+- `props` - Matching Props as type. if type === "Alert", props should be `React.ComponentProps<Alert>`
+- `overlayOptions`
+
+```typescript
+export interface OverlayOptions {
+  dim?: boolean; // default: true
+  transitionDuration?: number; // default: 0, as ms. this will make modal close(unmount) delayed.
+  closeOnOverlayClick?: boolean; // default: true
+  preventScroll?: boolean; // default: true, when modal is opened, body scroll is blocked.
+}
+```
+
+#### closeAll()
+
+close all opened modals
+
+## How to close opened modal?
+
+Modal can only closed by modal itself. see more on [below](#BasicModalProps)
+
+But there are 2 exceptions.
+
+- `closeAll()` - If you close All Modals, then every opened modals are closed.
+- `closeOnOverlayClick: true` - if user click outside of modal (may be darken with dim color), top modal is closed.
+
+### BasicModalProps
+
+When modal is opened by `openModal`, 2 more props are injected to your modal.
+
+- `close(): void`
+- `visible: boolean`
+
+So, When implementing modal, you can consider `close` props like this.
+
+```tsx
+import { BasicModalProps } from "@reactleaf/react-modal";
+
+interface Props extends BasicModalProps {
+  title: string;
+  message: string;
+}
+const Alert = ({
+  title,
+  message,
+  close, // injected by react-modal
+}: Props) => {
+  return (
+    <div className="alert modal">
+      <p className="modal-title">{title}</p>
+      <div className="modal-body">
+        <p className="message">{message}</p>
+      </div>
+      <div className="modal-buttons">
+        <button onClick={close}>Close</button>
+      </div>
+    </div>
+  );
+};
+```
+
+## Working Examples
+
+See more on [Examples](https://github.com/reactleaf/react-modal/tree/main/examples)
