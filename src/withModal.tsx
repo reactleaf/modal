@@ -18,7 +18,7 @@ export type EnhancedModalPayload<
 
 export interface OverlayOptions {
   dim?: boolean | string;
-  transitionDuration?: number;
+  closeDelay?: number;
   closeOnOverlayClick?: boolean;
   preventScroll?: boolean;
 }

@@ -147,16 +147,20 @@ const useModal = createModalHook<typeof yourModalRegister>();
 open selected typed modal with given props
 
 ```typescript
-openModal({ type: keyof Register, props: Props, overlayOptions: OverlayOptions })
+function openModal(payload: {
+  type: keyof Register;
+  props: Props;
+  overlayOptions?: OverlayOptions;
+});
 ```
 
-- `props` - Matching Props as type. if type === "Alert", props should be `React.ComponentProps<Alert>`
-- `overlayOptions`
+- `Props` - Matching Props as type. if type === "Alert", props should be `React.ComponentProps<Alert>`
+- `OverlayOptions`
 
 ```typescript
 export interface OverlayOptions {
   dim?: boolean; // default: true
-  transitionDuration?: number; // default: 0, as ms. this will make modal close(unmount) delayed.
+  closeDelay?: number; // default: 0, as ms. this will make modal close(unmount) delayed. Useful if you want to add closing animation.
   closeOnOverlayClick?: boolean; // default: true
   preventScroll?: boolean; // default: true, when modal is opened, body scroll is blocked.
 }
@@ -165,6 +169,36 @@ export interface OverlayOptions {
 #### closeAll()
 
 close all opened modals
+
+## How to add opening / closing animation?
+
+For animation, modal opening is delayed for a frame.
+You can add Overlay styles like this.
+
+```css
+.modal-overlay {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.modal-overlay.visible {
+  opacity: 1;
+}
+```
+
+and also in your custom modal, has `visible` props. See [below](#BasicModalProps) to know more about visible props.
+Be sure that `closeDelay` option is properly set, if you want to animate on closing.
+Detailed implementation is at [Slideup Example](https://github.com/reactleaf/react-modal/tree/main/examples/with-cra/src/modals/Slideup)
+
+```css
+.slideup {
+  transition: transform 500ms;
+  transform: translateY(100%);
+}
+
+.slideup.visible {
+  transform: translateY(0);
+}
+```
 
 ## How to close opened modal?
 
@@ -194,10 +228,11 @@ interface Props extends BasicModalProps {
 const Alert = ({
   title,
   message,
+  visible,
   close, // injected by react-modal
 }: Props) => {
   return (
-    <div className="alert modal">
+    <div className={cx("alert", "modal", { visible })}>
       <p className="modal-title">{title}</p>
       <div className="modal-body">
         <p className="message">{message}</p>

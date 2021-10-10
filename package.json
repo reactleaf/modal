@@ -1,6 +1,6 @@
 {
   "name": "@reactleaf/react-modal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React Modal Library with context",
   "main": "index.js",
   "types": "index.d.ts",

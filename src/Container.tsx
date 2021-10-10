@@ -65,7 +65,7 @@ interface OverlayProps extends OverlayOptions {
 }
 const ModalOverlay: React.FC<OverlayProps> = ({
   dim = true,
-  transitionDuration = 0,
+  closeDelay = 0,
   closeOnOverlayClick = true,
   preventScroll = true,
   children,
@@ -73,11 +73,14 @@ const ModalOverlay: React.FC<OverlayProps> = ({
 }) => {
   // animated close
   const [visible, setVisible] = useState(false);
-  useEffect(() => setVisible(true), []);
+  useEffect(
+    () => void window.requestAnimationFrame(() => setVisible(true)),
+    []
+  );
 
   function delayedClose() {
     setVisible(false);
-    setTimeout(closeSelf, transitionDuration);
+    setTimeout(closeSelf, closeDelay);
   }
 
   const onClick = (e: React.MouseEvent) => {
@@ -101,11 +104,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     .join(" ");
 
   return (
-    <div
-      className={className}
-      onClick={onClick}
-      style={{ transitionDuration: `${transitionDuration}ms` }}
-    >
+    <div className={className} onClick={onClick}>
       {cloneElement(children, { close: delayedClose, visible })}
     </div>
   );
