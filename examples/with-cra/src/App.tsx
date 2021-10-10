@@ -1,11 +1,16 @@
 import "./App.css";
 import "@reactleaf/react-modal/style.css";
 import { withModal } from "@reactleaf/react-modal";
-import { useModal } from "./modals/useModal";
+import { useModal, preloadModal } from "./modals/useModal";
 import register from "./modals/register";
+import { useEffect } from "react";
 
 function App() {
   const { openModal } = useModal();
+
+  useEffect(() => {
+    preloadModal("Alert");
+  }, []);
 
   function openAlert() {
     openModal({

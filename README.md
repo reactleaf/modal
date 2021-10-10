@@ -106,6 +106,24 @@ function openAlert() {
 }
 ```
 
+### Preload modals
+
+We use dynamic import to load modals when modal opens. It makes code-splitting easier, and initial bundle size smaller.
+But sometimes, you may need synchronous imports, for instantly open modals.
+It might for mounting animation, or modal has large dependencies to load on open.
+Then, you can preload modals before user click the button that opens modal.
+This calls `import()` from your register, to ensure `openModal()` runs synchronously.
+
+```typescript
+import { createModalPreloader } from "@reactleaf/react-modal";
+const preloadModal = createModalPreloader(register);
+
+// when component mounted, load relative modals.
+useEffect(() => {
+  preloadModal("Alert", "Confirm");
+}, []);
+```
+
 ## Props
 
 #### withModal(register, App)
