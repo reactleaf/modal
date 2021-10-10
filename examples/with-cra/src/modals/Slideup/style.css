@@ -1,0 +1,12 @@
+.slideup {
+  position: absolute;
+  bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background-color: #eee;
+  transition: transform 500ms;
+  transform: translateY(100%);
+}
+
+.slideup.visible {
+  transform: translateY(0);
+}

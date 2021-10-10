@@ -16,9 +16,7 @@ function App() {
     openModal({
       type: "Alert",
       props: { title: "This is Alert", message: "Hello" },
-      overlayOptions: {
-        transitionDuration: 300,
-      },
+      overlayOptions: { transitionDuration: 300 },
     });
   }
 
@@ -34,10 +32,19 @@ function App() {
     });
   }
 
+  function openSlideup() {
+    openModal({
+      type: "Slideup",
+      props: { message: "Tada!" },
+      overlayOptions: { transitionDuration: 500 },
+    });
+  }
+
   return (
     <div className="App">
       <button onClick={openAlert}>Open Alert</button>
       <button onClick={openConfirm}>Open Confirm</button>
+      <button onClick={openSlideup}>Open Slideup</button>
     </div>
   );
 }
