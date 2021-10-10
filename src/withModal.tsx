@@ -31,7 +31,7 @@ type ModalContextType<R extends Register> = {
 
 const ModalContext = createContext({
   openModal: (payload: any) => void 0,
-  closeModal: (payload: any) => void 0,
+  closeModal: (payload: { id: string }) => void 0,
   closeAll: () => void 0,
 });
 
@@ -110,4 +110,9 @@ export const withModal = <R extends Register, P = unknown>(
   return WithModal;
 };
 
+// not recommended
 export const useModal = () => useContext(ModalContext);
+
+export const createModalHook = <R extends Register>() => {
+  return () => useContext(ModalContext as React.Context<ModalContextType<R>>);
+};

@@ -99,10 +99,13 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     }
   }, []);
 
+  const className = [dim && "dim", visible && "visible"]
+    .filter((e) => e)
+    .join(" ");
+
   return (
     <div
-      // dim={dim}
-      // visible={visible}
+      className={className}
       onClick={onClick}
       style={{ transitionDuration: `${closeDelay}ms` }}
     >

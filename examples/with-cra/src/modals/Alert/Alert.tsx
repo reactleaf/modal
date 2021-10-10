@@ -6,13 +6,13 @@ interface Props extends BasicModalProps {
   confirmText?: string;
   onConfirm?(): void;
 }
-const Alert: React.FC<Props> = ({
+const Alert = ({
   title,
   message,
   confirmText = "확인",
   onConfirm,
   close,
-}) => {
+}: Props) => {
   function handleConfirm() {
     onConfirm?.();
     close();

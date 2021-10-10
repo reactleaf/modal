@@ -1,12 +1,13 @@
 import "./App.css";
-import { withModal, useModal } from "@reactleaf/react-modal";
+import { withModal } from "@reactleaf/react-modal";
+import { useModal } from "./modals/useModal";
 import register from "./modals/register";
 
 function App() {
   const { openModal } = useModal();
 
   function openAlert() {
-    openModal({ type: "" });
+    openModal({ type: "Alert", props: { title: "", message: "Hello" } });
   }
   return (
     <div className="App">
