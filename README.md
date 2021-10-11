@@ -245,6 +245,36 @@ const Alert = ({
 };
 ```
 
+## Styling
+
+There is [default style file](https://github.com/reactleaf/react-modal/blob/main/style.css)
+You can import this
+
+```javascript
+import "@reactleaf/react-modal/style.css";
+```
+
+or make or override your own styles.
+
+- `.modal-overlay` - Each modal's overlay element.
+- `.modal-overlay.dim` - When you applied `overlayOption: { dim: true }`. This option is `true` by default.
+- `.modal-overlay.visible` - `.visible` is attatched after a frame after mount. This is for mounting animation.
+
+Here is some basic overriding example you can use
+
+```css
+.modal-overlay {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.modal-overlay.dim {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.modal-overlay.visible {
+  opacity: 1;
+}
+```
+
 ## Working Examples
 
 See more on [Examples](https://github.com/reactleaf/react-modal/tree/main/examples)
