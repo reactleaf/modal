@@ -1,27 +1,7 @@
 import React, { createContext, Dispatch, useContext, useReducer } from "react";
 
 import ModalContainer from "./Container";
-import { ModalOwnProps, Register } from "./types";
-
-export type OpenModalPayload<R extends Register, T extends keyof R> = {
-  type: T;
-  props: ModalOwnProps<R[T]>;
-  overlayOptions?: OverlayOptions;
-};
-
-export type EnhancedModalPayload<
-  R extends Register,
-  T extends keyof R
-> = OpenModalPayload<R, T> & {
-  id: string;
-};
-
-export interface OverlayOptions {
-  dim?: boolean | string;
-  closeDelay?: number;
-  closeOnOverlayClick?: boolean;
-  preventScroll?: boolean;
-}
+import { OpenModalPayload, EnhancedModalPayload, Register } from "./types";
 
 type ModalContextType<R extends Register> = {
   openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => void;

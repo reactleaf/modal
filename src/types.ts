@@ -19,3 +19,24 @@ export interface BasicModalProps {
   close: () => void;
   visible: boolean; // for animation
 }
+
+export type OpenModalPayload<R extends Register, T extends keyof R> = {
+  type: T;
+  props: ModalOwnProps<R[T]>;
+  overlayOptions?: OverlayOptions;
+};
+
+export type EnhancedModalPayload<
+  R extends Register,
+  T extends keyof R
+> = OpenModalPayload<R, T> & {
+  id: string;
+};
+
+export interface OverlayOptions {
+  className?: string;
+  closeDelay?: number;
+  closeOnOverlayClick?: boolean;
+  dim?: boolean | string;
+  preventScroll?: boolean;
+}

@@ -159,9 +159,10 @@ function openModal(payload: {
 
 ```typescript
 export interface OverlayOptions {
-  dim?: boolean; // default: true
+  className?: string; // to distinguish each overlay element: make different animation per modal.
   closeDelay?: number; // default: 0, as ms. this will make modal close(unmount) delayed. Useful if you want to add closing animation.
   closeOnOverlayClick?: boolean; // default: true
+  dim?: boolean; // default: true
   preventScroll?: boolean; // default: true, when modal is opened, body scroll is blocked.
 }
 ```
@@ -274,6 +275,9 @@ Here is some basic overriding example you can use
   opacity: 1;
 }
 ```
+
+Also, OverlayOptions has `className` parameter, to distinguish each overlay.
+You can add className to each modal, so every overlay element can have different animation or dim colors.
 
 ## Working Examples
 

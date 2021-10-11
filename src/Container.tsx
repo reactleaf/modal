@@ -1,6 +1,12 @@
 import React, { useEffect, useState, cloneElement } from "react";
-import { Importer, Register } from "./types";
-import { useModal, EnhancedModalPayload, OverlayOptions } from "./withModal";
+import cx from "classnames";
+import {
+  Importer,
+  Register,
+  EnhancedModalPayload,
+  OverlayOptions,
+} from "./types";
+import { useModal } from "./withModal";
 
 interface Props<R extends Register> {
   register: R;
@@ -64,9 +70,10 @@ interface OverlayProps extends OverlayOptions {
   children: React.ReactElement;
 }
 const ModalOverlay: React.FC<OverlayProps> = ({
-  dim = true,
+  className = "",
   closeDelay = 0,
   closeOnOverlayClick = true,
+  dim = true,
   preventScroll = true,
   children,
   closeSelf,
@@ -99,12 +106,11 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     }
   }, []);
 
-  const className = ["modal-overlay", dim && "dim", visible && "visible"]
-    .filter((e) => e)
-    .join(" ");
-
   return (
-    <div className={className} onClick={onClick}>
+    <div
+      className={cx("modal-overlay", className, { dim, visible })}
+      onClick={onClick}
+    >
       {cloneElement(children, { close: delayedClose, visible })}
     </div>
   );
