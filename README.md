@@ -5,9 +5,8 @@ React modal with context and hooks
 ## Concept
 
 This library uses HoC to provide context and container, and provide hooks to open and close modal.
-Main Concept of this library is providing **type-safe** method to open specific modals on anywhere of your code.
-
-More details are on below
+Main Concept of this library is providing **type-safe** method to open **any** modals on **anywhere** of your code.
+Second object ismodal code will not be loaded until modal is opened: Reduce bundle size. This is important for faster web.
 
 ## Installation and Usage
 
@@ -21,7 +20,7 @@ yarn add @reactleaf/react-modal
 
 At first, you should make a your own modal register.
 we are using dynamic import, to reduce initial loading size.
-Any modals registered will be loaded on when modal is called to open, not on initialize sequence.
+Any modals registered will be loaded on when modal is called to open, not bundled on app/page code.
 
 ```typescript
 const register = {
@@ -32,11 +31,13 @@ const register = {
 export default register;
 ```
 
+But in some cases, you may need to pre-load some modals before they are opened. Then see [below](#preload-modals)
+
 ### Modal Context
 
 Now provide this register to your app.
 This HoC will provide modalContext to your app, and also modal container, that modals will be rendered.
-So Simple!
+**How Simple!**
 
 ```typescript
 import { withModal } from "@reactleaf/react-modal";
@@ -88,7 +89,7 @@ import { useModal } from './modals/useModal'
 const { openModal } = useModal()
 function openAlert() {
   openModal({ type: 'Confrim', props: { title: 'Hello', message: 'Wow' } })
-              ^^^^
+              ^^^^       ^^
               type 'Confrim' is not assignable to type 'Alert' | 'Confirm'
 }
 ```
@@ -140,7 +141,9 @@ const useModal = createModalHook<typeof yourModalRegister>();
 
 #### useModal()
 
-- `retuns` - { openModal, closeAll }
+```typescript
+const { openModal, closeAll } = useModal();
+```
 
 #### openModal(payload)
 
@@ -154,7 +157,7 @@ function openModal(payload: {
 });
 ```
 
-- `Props` - Matching Props as type. if type === "Alert", props should be `React.ComponentProps<Alert>`
+- `Props` - Matching Props as type. if `type === "Alert"`, props should be `React.ComponentProps<Alert>`
 - `OverlayOptions`
 
 ```typescript
@@ -188,7 +191,7 @@ You can add Overlay styles like this.
 
 and also in your custom modal, has `visible` props. See [below](#BasicModalProps) to know more about visible props.
 Be sure that `closeDelay` option is properly set, if you want to animate on closing.
-Detailed implementation is at [Slideup Example](https://github.com/reactleaf/react-modal/tree/main/examples/with-cra/src/modals/Slideup)
+See [Slideup Example](https://github.com/reactleaf/react-modal/tree/main/examples/with-cra/src/modals/Slideup).
 
 ```css
 .slideup {
@@ -207,7 +210,7 @@ Modal can only closed by modal itself. see more on [below](#BasicModalProps)
 
 But there are 2 exceptions.
 
-- `closeAll()` - If you close All Modals, then every opened modals are closed.
+- `closeAll()`
 - `closeOnOverlayClick: true` - if user click outside of modal (may be darken with dim color), top modal is closed.
 
 ### BasicModalProps
@@ -229,7 +232,7 @@ interface Props extends BasicModalProps {
 const Alert = ({
   title,
   message,
-  visible,
+  visible, // injected by react-modal
   close, // injected by react-modal
 }: Props) => {
   return (
