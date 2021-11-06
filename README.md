@@ -2,6 +2,8 @@
 
 React modal with context and hooks
 
+- [한국어](./README-ko.md)
+
 ## Concept
 
 This library uses HoC to provide context and container, and provide hooks to open and close modal.
