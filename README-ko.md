@@ -1,5 +1,7 @@
 # @reactleaf/react-modal
 
+[![npm version](https://badge.fury.io/js/@reactleaf%2Freact-modal.svg)](https://badge.fury.io/js/@reactleaf%2Freact-modal)
+
 컨텍스트와 훅을 사용하는 리액트 모달 라이브러리
 
 ## 목적

@@ -1,5 +1,7 @@
 # @reactleaf/react-modal
 
+[![npm version](https://badge.fury.io/js/@reactleaf%2Freact-modal.svg)](https://badge.fury.io/js/@reactleaf%2Freact-modal)
+
 React modal with context and hooks
 
 - [한국어](./README-ko.md)
