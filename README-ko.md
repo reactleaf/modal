@@ -47,7 +47,7 @@ function App() {
   ...
 }
 
-export default withModal(register, App);
+export default withModal(register)(App);
 ```
 
 ### useModal 훅
@@ -127,7 +127,7 @@ useEffect(() => {
 
 ## Props
 
-#### withModal(register, App)
+#### withModal(register)(App)
 
 - `register` - 위에서 만든 레지스터를 넣습니다.
 - `App` - 당신의 앱 컴포넌트입니다.

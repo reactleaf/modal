@@ -24,70 +24,69 @@ function bindActionCreator<A, C extends ActionCreator<A>>(
   return (...args: Parameters<C>) => dispatch(actionCreator(...args));
 }
 
-export const withModal = <R extends Register, P = unknown>(
-  register: R,
-  Component: React.ComponentType<P>
-) => {
-  function openModal(payload: OpenModalPayload<R, keyof R>) {
-    return {
-      type: "@modal/OPEN_MODAL" as const,
-      payload: {
-        ...payload,
-        id: `${payload.type}_${Date.now()}`,
-      } as EnhancedModalPayload<R, keyof R>,
-    };
-  }
-  function closeModal(payload: { id: string }) {
-    return { type: "@modal/CLOSE_MODAL" as const, payload };
-  }
-  function closeAll() {
-    return { type: "@modal/CLOSE_ALL" as const };
-  }
-
-  /** reducer */
-  type ModalActionCreator =
-    | typeof openModal
-    | typeof closeModal
-    | typeof closeAll;
-  type ModalAction = ReturnType<ModalActionCreator>;
-
-  function reducer(
-    state: EnhancedModalPayload<R, keyof R>[],
-    action: ModalAction
-  ) {
-    switch (action.type) {
-      case "@modal/OPEN_MODAL":
-        return [...state, action.payload];
-      case "@modal/CLOSE_MODAL":
-        return state.filter((modal) => modal.id !== action.payload.id);
-      case "@modal/CLOSE_ALL":
-        return [] as EnhancedModalPayload<R, keyof R>[];
+export const withModal =
+  <R extends Register>(register: R) =>
+  <P,>(Component: React.ComponentType<P>) => {
+    function openModal(payload: OpenModalPayload<R, keyof R>) {
+      return {
+        type: "@modal/OPEN_MODAL" as const,
+        payload: {
+          ...payload,
+          id: `${payload.type}_${Date.now()}`,
+        } as EnhancedModalPayload<R, keyof R>,
+      };
     }
-  }
+    function closeModal(payload: { id: string }) {
+      return { type: "@modal/CLOSE_MODAL" as const, payload };
+    }
+    function closeAll() {
+      return { type: "@modal/CLOSE_ALL" as const };
+    }
 
-  return function WithModal(props: P) {
-    const [openedModals, dispatch] = useReducer(
-      reducer,
-      [] as EnhancedModalPayload<R, keyof R>[]
-    );
-    const modalActions = {
-      openModal: bindActionCreator(openModal, dispatch),
-      closeModal: bindActionCreator(closeModal, dispatch),
-      closeAll: bindActionCreator(closeAll, dispatch),
+    /** reducer */
+    type ModalActionCreator =
+      | typeof openModal
+      | typeof closeModal
+      | typeof closeAll;
+    type ModalAction = ReturnType<ModalActionCreator>;
+
+    function reducer(
+      state: EnhancedModalPayload<R, keyof R>[],
+      action: ModalAction
+    ) {
+      switch (action.type) {
+        case "@modal/OPEN_MODAL":
+          return [...state, action.payload];
+        case "@modal/CLOSE_MODAL":
+          return state.filter((modal) => modal.id !== action.payload.id);
+        case "@modal/CLOSE_ALL":
+          return [] as EnhancedModalPayload<R, keyof R>[];
+      }
+    }
+
+    return function WithModal(props: P) {
+      const [openedModals, dispatch] = useReducer(
+        reducer,
+        [] as EnhancedModalPayload<R, keyof R>[]
+      );
+      const modalActions = {
+        openModal: bindActionCreator(openModal, dispatch),
+        closeModal: bindActionCreator(closeModal, dispatch),
+        closeAll: bindActionCreator(closeAll, dispatch),
+      };
+
+      const TypedModalContext = ModalContext as React.Context<
+        ModalContextType<R>
+      >;
+
+      return (
+        <TypedModalContext.Provider value={modalActions}>
+          <Component {...props} />
+          <ModalContainer register={register} openedModals={openedModals} />
+        </TypedModalContext.Provider>
+      );
     };
-
-    const TypedModalContext = ModalContext as React.Context<
-      ModalContextType<R>
-    >;
-
-    return (
-      <TypedModalContext.Provider value={modalActions}>
-        <Component {...props} />
-        <ModalContainer register={register} openedModals={openedModals} />
-      </TypedModalContext.Provider>
-    );
   };
-};
 
 /**
  * not recommended to use directly,

@@ -49,7 +49,7 @@ function App() {
   ...
 }
 
-export default withModal(register, App);
+export default withModal(register)(App);
 ```
 
 ### useModal Hook
@@ -129,7 +129,7 @@ useEffect(() => {
 
 ## Props
 
-#### withModal(register, App)
+#### withModal(register)(App)
 
 - `register` - your modal register
 - `App` - your App
