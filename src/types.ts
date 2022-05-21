@@ -20,11 +20,19 @@ export interface BasicModalProps {
   visible: boolean; // for animation
 }
 
-export type OpenModalPayload<R extends Register, T extends keyof R> = {
-  type: T;
-  props: ModalOwnProps<R[T]>;
-  overlayOptions?: OverlayOptions;
-};
+// from @type-challenges/utils
+type Equals<X, Y> = (() => Y extends X ? 1 : 2) extends () => X extends Y
+  ? 1
+  : 2
+  ? true
+  : false;
+
+export type OpenModalPayload<R extends Register, T extends keyof R> = Equals<
+  ModalOwnProps<R[T]>,
+  {}
+> extends true
+  ? { type: T; props?: ModalOwnProps<R[T]>; overlayOptions?: OverlayOptions }
+  : { type: T; props: ModalOwnProps<R[T]>; overlayOptions?: OverlayOptions };
 
 export type EnhancedModalPayload<
   R extends Register,

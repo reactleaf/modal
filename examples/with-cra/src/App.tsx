@@ -49,4 +49,4 @@ function App() {
   );
 }
 
-export default withModal(register, App);
+export default withModal(register)(App);
