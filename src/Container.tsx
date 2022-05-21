@@ -19,23 +19,19 @@ function ModalContainer<R extends Register>({
   return (
     <div id="modal-root">
       {openedModals.map((modalState) => {
-        const importer = register[modalState.type];
-        return (
-          <OpenedModal
-            key={modalState.id}
-            importer={importer}
-            {...modalState}
-          />
-        );
+        const props: OpenedModalProps<typeof register> = {
+          importer: register[modalState.type],
+          ...modalState,
+        };
+        return <OpenedModal key={modalState.id} {...props} />;
       })}
     </div>
   );
 }
 
-interface OpenedModalProps<R extends Register>
-  extends EnhancedModalPayload<R, keyof R> {
+type OpenedModalProps<R extends Register> = EnhancedModalPayload<R, keyof R> & {
   importer: Importer;
-}
+};
 function OpenedModal<R extends Register>({
   importer,
   type,
@@ -80,10 +76,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
 }) => {
   // animated close
   const [visible, setVisible] = useState(false);
-  useEffect(
-    () => void window.requestAnimationFrame(() => setVisible(true)),
-    []
-  );
+  useEffect(() => void window.setTimeout(() => setVisible(true)), []);
 
   function delayedClose() {
     setVisible(false);
