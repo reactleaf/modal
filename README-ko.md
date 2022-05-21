@@ -154,7 +154,7 @@ const { openModal, closeAll } = useModal();
 ```typescript
 function openModal(payload: {
   type: keyof Register;
-  props: Props;
+  props?: Props;
   overlayOptions?: OverlayOptions;
 });
 ```

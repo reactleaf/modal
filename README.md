@@ -156,7 +156,7 @@ open selected typed modal with given props
 ```typescript
 function openModal(payload: {
   type: keyof Register;
-  props: Props;
+  props?: Props;
   overlayOptions?: OverlayOptions;
 });
 ```
