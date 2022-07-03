@@ -172,6 +172,8 @@ export interface OverlayOptions {
 }
 ```
 
+- `returns` - 방금 열었던 모달의 유니크한 "ID"를 반환합니다. 이 아이디를 closeModal에 전달하여, 특정 모달을 지정해서 닫을 수 있습니다.
+
 #### closeAll()
 
 모든 열려있는 모달을 닫습니다.
@@ -208,10 +210,11 @@ export interface OverlayOptions {
 
 ## 모달을 닫는 방법
 
-모달이 스스로 닫는 방법 외의 다른 방법은 제공되지 않습니다. [아래](#BasicModalProps)에서 더 알아보세요.
+유저 경험을 위해, 웬만하면 모달은 스스로 닫는 방식으로 구현하는 것을 권장합니다. [아래](#BasicModalProps)에서 더 알아보세요.
 
-다만 두 가지 예외가 있습니다.
+물론 바깥에서도 닫을 수 있습니다.
 
+- `const id = openModal(); closeModal({ id });`
 - `closeAll()`
 - `closeOnOverlayClick: true` - 유저가 모달 바깥(보통 어두운 색으로 가려두는)을 클릭한 경우, 가장 위에 열린 모달이 닫힙니다.
 
@@ -222,7 +225,7 @@ export interface OverlayOptions {
 - `close(): void`
 - `visible: boolean`
 
-이 props를 활용하기 위해서, 이런 방식으로 구현하시기를 추천합니다.
+이 props를 활용하기 위해서, 다음 방식으로 구현하시기를 추천합니다.
 
 ```tsx
 import { BasicModalProps } from "@reactleaf/react-modal";

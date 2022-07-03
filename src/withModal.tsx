@@ -4,13 +4,13 @@ import ModalContainer from "./Container";
 import { OpenModalPayload, EnhancedModalPayload, Register } from "./types";
 
 type ModalContextType<R extends Register> = {
-  openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => void;
+  openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => string;
   closeModal: (payload: { id: string }) => void;
   closeAll: () => void;
 };
 
 const ModalContext = createContext({
-  openModal: (payload: any) => void 0,
+  openModal: (payload: any) => "",
   closeModal: (payload: { id: string }) => void 0,
   closeAll: () => void 0,
 });
@@ -32,7 +32,7 @@ export const withModal =
         type: "@modal/OPEN_MODAL" as const,
         payload: {
           ...payload,
-          id: `${payload.type}_${Date.now()}`,
+          id: `${String(payload.type)}_${Date.now()}`,
         } as EnhancedModalPayload<R, keyof R>,
       };
     }
@@ -70,7 +70,11 @@ export const withModal =
         [] as EnhancedModalPayload<R, keyof R>[]
       );
       const modalActions = {
-        openModal: bindActionCreator(openModal, dispatch),
+        openModal: (payload: OpenModalPayload<R, keyof R>) => {
+          const action = openModal(payload);
+          dispatch(action);
+          return action.payload.id;
+        },
         closeModal: bindActionCreator(closeModal, dispatch),
         closeAll: bindActionCreator(closeAll, dispatch),
       };

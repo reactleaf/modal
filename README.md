@@ -158,7 +158,7 @@ function openModal(payload: {
   type: keyof Register;
   props?: Props;
   overlayOptions?: OverlayOptions;
-});
+}): string;
 ```
 
 - `Props` - Matching Props as type. if `type === "Alert"`, props should be `React.ComponentProps<Alert>`
@@ -173,6 +173,8 @@ export interface OverlayOptions {
   preventScroll?: boolean; // default: true, when modal is opened, body scroll is blocked.
 }
 ```
+
+- `returns` - It returns unique "ID" of opened modal. You can use it to close that specific modal.
 
 #### closeAll()
 
@@ -210,10 +212,11 @@ See [Slideup Example](https://github.com/reactleaf/react-modal/tree/main/example
 
 ## How to close opened modal?
 
-Modal can only closed by modal itself. see more on [below](#BasicModalProps)
+Recommended way to close modal is closing by modal itself. see more on [below](#BasicModalProps)
 
-But there are 2 exceptions.
+But there are some other ways.
 
+- `const id = openModal(); closeModal({ id });`
 - `closeAll()`
 - `closeOnOverlayClick: true` - if user click outside of modal (may be darken with dim color), top modal is closed.
 
