@@ -17,6 +17,7 @@ function App() {
       type: "Alert",
       props: { title: "This is Alert", message: "Hello" },
       overlayOptions: { closeDelay: 300 },
+      events: { onClose: () => window.alert("Closed") },
     });
   }
 
