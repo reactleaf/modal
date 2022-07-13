@@ -158,6 +158,7 @@ function openModal(payload: {
   type: keyof Register;
   props?: Props;
   overlayOptions?: OverlayOptions;
+  events?: ModalEvents;
 }): string;
 ```
 
@@ -174,7 +175,19 @@ export interface OverlayOptions {
 }
 ```
 
+- `ModalEvents`
+
+```typescript
+export interface ModalEvents {
+  onClose?: () => void; // a callback that called on modal closed.
+}
+```
+
 - `returns` - It returns unique "ID" of opened modal. You can use it to close that specific modal.
+
+#### closeModal({ id: string })
+
+Close specifig modal. This action requires the "ID" that `openModal()` returns.
 
 #### closeAll()
 

@@ -144,7 +144,7 @@ const useModal = createModalHook<typeof yourModalRegister>();
 #### useModal()
 
 ```typescript
-const { openModal, closeAll } = useModal();
+const { openModal, closeModal, closeAll } = useModal();
 ```
 
 #### openModal(payload)
@@ -156,6 +156,7 @@ function openModal(payload: {
   type: keyof Register;
   props?: Props;
   overlayOptions?: OverlayOptions;
+  events?: ModalEvents;
 });
 ```
 
@@ -172,7 +173,19 @@ export interface OverlayOptions {
 }
 ```
 
+- `ModalEvents`
+
+```typescript
+export interface ModalEvents {
+  onClose?: () => void; // 모달이 닫힐 때 불리는 콜백 함수입니다.
+}
+```
+
 - `returns` - 방금 열었던 모달의 유니크한 "ID"를 반환합니다. 이 아이디를 closeModal에 전달하여, 특정 모달을 지정해서 닫을 수 있습니다.
+
+#### closeModal({ id: string })
+
+특정 모달을 닫을 수 있습니다. 이 액션에서는 모달을 열 때 얻은 ID가 필요합니다.
 
 #### closeAll()
 

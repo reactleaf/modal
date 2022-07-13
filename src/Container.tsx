@@ -38,6 +38,7 @@ function OpenedModal<R extends Register>({
   id,
   props,
   overlayOptions,
+  events,
 }: OpenedModalProps<R>) {
   const { closeModal } = useModal();
   const [Component, setComponent] = useState<React.ComponentType>();
@@ -51,7 +52,10 @@ function OpenedModal<R extends Register>({
     });
   }, [type]);
 
-  const close = () => closeModal({ id });
+  function close() {
+    events?.onClose?.();
+    closeModal({ id });
+  }
 
   if (!Component) return null;
   return (

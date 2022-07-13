@@ -16,7 +16,7 @@ export type ModalOwnProps<I extends Importer> = I extends Importer
   : never;
 
 export interface BasicModalProps {
-  close: () => void;
+  close(): void;
   visible: boolean; // for animation
 }
 
@@ -31,8 +31,18 @@ export type OpenModalPayload<R extends Register, T extends keyof R> = Equals<
   ModalOwnProps<R[T]>,
   {}
 > extends true
-  ? { type: T; props?: ModalOwnProps<R[T]>; overlayOptions?: OverlayOptions }
-  : { type: T; props: ModalOwnProps<R[T]>; overlayOptions?: OverlayOptions };
+  ? {
+      type: T;
+      props?: ModalOwnProps<R[T]>;
+      overlayOptions?: OverlayOptions;
+      events?: ModalEvents;
+    }
+  : {
+      type: T;
+      props: ModalOwnProps<R[T]>;
+      overlayOptions?: OverlayOptions;
+      events?: ModalEvents;
+    };
 
 export type EnhancedModalPayload<
   R extends Register,
@@ -47,4 +57,8 @@ export interface OverlayOptions {
   closeOnOverlayClick?: boolean;
   dim?: boolean | string;
   preventScroll?: boolean;
+}
+
+export interface ModalEvents {
+  onClose?(): void;
 }
