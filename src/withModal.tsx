@@ -1,7 +1,12 @@
 import React, { createContext, Dispatch, useContext, useReducer } from "react";
 
 import ModalContainer from "./Container";
-import { OpenModalPayload, EnhancedModalPayload, Register } from "./types";
+import {
+  OpenModalPayload,
+  EnhancedModalPayload,
+  Register,
+  OverlayOptions,
+} from "./types";
 
 type ModalContextType<R extends Register> = {
   openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => string;
@@ -25,13 +30,22 @@ function bindActionCreator<A, C extends ActionCreator<A>>(
 }
 
 export const withModal =
-  <R extends Register>(register: R) =>
+  <R extends Register>(
+    register: R,
+    defaultOverlayOptions?: Partial<OverlayOptions>
+  ) =>
   <P,>(Component: React.ComponentType<P>) => {
     function openModal(payload: OpenModalPayload<R, keyof R>) {
       return {
         type: "@modal/OPEN_MODAL" as const,
         payload: {
-          ...payload,
+          type: payload.type,
+          props: payload.props,
+          overlayOptions: Object.assign(
+            {},
+            defaultOverlayOptions,
+            payload.overlayOptions
+          ),
           id: `${String(payload.type)}_${Date.now()}`,
         } as EnhancedModalPayload<R, keyof R>,
       };
