@@ -144,7 +144,7 @@ const useModal = createModalHook<typeof yourModalRegister>();
 #### useModal()
 
 ```typescript
-const { openModal, closeModal, closeAll } = useModal();
+const { openModal, closeModal, closeAll, openedModals } = useModal();
 ```
 
 #### openModal(payload)
@@ -152,12 +152,14 @@ const { openModal, closeModal, closeAll } = useModal();
 지정된 타입의 모달을 열고, 주어진 props를 모달에 전달합니다.
 
 ```typescript
-function openModal(payload: {
+interface OpenModalPayload {
   type: keyof Register;
   props?: Props;
   overlayOptions?: OverlayOptions;
   events?: ModalEvents;
-});
+}
+
+function openModal(payload: OpenModalPayload);
 ```
 
 - `Props` - type에 맞는 props를 제공합니다. 만약 `type === "Alert"` 이라면, props는 `React.ComponentProps<Alert>` 타입의 값이어야 합니다.
@@ -190,6 +192,10 @@ export interface ModalEvents {
 #### closeAll()
 
 모든 열려있는 모달을 닫습니다.
+
+#### openedModals: OpenModalPayload[]
+
+열려있는 모달 목록을 반환합니다. 모달이 하나라도 열려있는지, 특정 타입 모달이 열려있는지, 등을 체크할 수 있습니다.
 
 ## 모달이 열리고 닫히는 애니메이션을 넣으려면 어떻게 해야 하나요?
 

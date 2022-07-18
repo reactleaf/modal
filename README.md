@@ -154,12 +154,14 @@ const { openModal, closeAll } = useModal();
 open selected typed modal with given props
 
 ```typescript
-function openModal(payload: {
+interface OpenModalPayload {
   type: keyof Register;
   props?: Props;
   overlayOptions?: OverlayOptions;
   events?: ModalEvents;
-}): string;
+}
+
+function openModal(payload: OpenModalPayload);
 ```
 
 - `Props` - Matching Props as type. if `type === "Alert"`, props should be `React.ComponentProps<Alert>`
@@ -191,7 +193,11 @@ Close specifig modal. This action requires the "ID" that `openModal()` returns.
 
 #### closeAll()
 
-close all opened modals
+Close all opened modals
+
+#### openedModals: OpenModalPayload[]
+
+Returns opened modals. It is an array of the OpenModalPayload, so you can check any modal is opened, or some type of modal is opened or not.
 
 ## How to add opening / closing animation?
 
