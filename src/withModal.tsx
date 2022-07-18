@@ -9,12 +9,14 @@ import {
 } from "./types";
 
 type ModalContextType<R extends Register> = {
+  openedModals: OpenModalPayload<R, keyof R>[];
   openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => string;
   closeModal: (payload: { id: string }) => void;
   closeAll: () => void;
 };
 
 const ModalContext = createContext({
+  openedModals: [] as unknown[],
   openModal: (payload: any) => "",
   closeModal: (payload: { id: string }) => void 0,
   closeAll: () => void 0,
@@ -99,7 +101,7 @@ export const withModal =
       >;
 
       return (
-        <TypedModalContext.Provider value={modalActions}>
+        <TypedModalContext.Provider value={{ openedModals, ...modalActions }}>
           <Component {...props} />
           <ModalContainer register={register} openedModals={openedModals} />
         </TypedModalContext.Provider>
