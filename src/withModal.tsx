@@ -38,6 +38,10 @@ export const withModal =
   ) =>
   <P,>(Component: React.ComponentType<P>) => {
     function openModal(payload: OpenModalPayload<R, keyof R>) {
+      // simple random hex generator
+      const key = Math.floor(Math.random() * 0xffffffff)
+        .toString(16)
+        .padStart(8, "0");
       return {
         type: "@modal/OPEN_MODAL" as const,
         payload: {
@@ -49,7 +53,7 @@ export const withModal =
             payload.overlayOptions
           ),
           events: payload.events,
-          id: `${String(payload.type)}_${Date.now()}`,
+          id: `${String(payload.type)}_${key}`,
         } as EnhancedModalPayload<R, keyof R>,
       };
     }
