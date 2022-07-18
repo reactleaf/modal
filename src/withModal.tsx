@@ -46,6 +46,7 @@ export const withModal =
             defaultOverlayOptions,
             payload.overlayOptions
           ),
+          events: payload.events,
           id: `${String(payload.type)}_${Date.now()}`,
         } as EnhancedModalPayload<R, keyof R>,
       };
