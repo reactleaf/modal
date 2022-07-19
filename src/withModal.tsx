@@ -109,14 +109,16 @@ export const withModal =
       // can open modal with window.postMessage
       useEffect(() => {
         if (typeof window === "undefined") return;
-        window.addEventListener("message", (e) => {
+        const messageHandler = (e: MessageEvent) => {
           // message to @reactleaf/react-modal
           if (e.data?.to && e.data?.to === "@reactleaf/react-modal") {
             modalActions.openModal(
               e.data.payload as OpenModalPayload<R, keyof R>
             );
           }
-        });
+        };
+        window.addEventListener("message", messageHandler);
+        return () => window.removeEventListener("message", messageHandler);
       }, []);
 
       const TypedModalContext = ModalContext as React.Context<
