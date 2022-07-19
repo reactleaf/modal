@@ -239,6 +239,24 @@ But there are some other ways.
 - `closeAll()`
 - `closeOnOverlayClick: true` - if user click outside of modal (may be darken with dim color), top modal is closed.
 
+## Can I open modals without hooks?
+
+`react-modal` recieves message, so you can use `window.postMessage()` to open modal. This is useful when you use third-party state control libraries, like redux-saga.
+
+But be careful: `postMessage` is NOT GOOD for type checking, and cannot message functions. If your modal has props like `onConfirm`, `postMessage` cannot handle the props.
+
+postMessage only can receive `openModal` payload. CANNOT CLOSE modals.
+
+```typescript
+window.postMessage({
+  to: "@reactleaf/react-modal",
+  payload: {
+    type: "Example",
+    props: { warning: "postMessage only can send SERIALIZABLE values." },
+  },
+});
+```
+
 ### BasicModalProps
 
 When modal is opened by `openModal`, 2 more props are injected to your modal.

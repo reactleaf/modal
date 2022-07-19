@@ -1,4 +1,10 @@
-import React, { createContext, Dispatch, useContext, useReducer } from "react";
+import React, {
+  createContext,
+  Dispatch,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
 
 import ModalContainer from "./Container";
 import {
@@ -99,6 +105,19 @@ export const withModal =
         closeModal: bindActionCreator(closeModal, dispatch),
         closeAll: bindActionCreator(closeAll, dispatch),
       };
+
+      // can open modal with window.postMessage
+      useEffect(() => {
+        if (typeof window === "undefined") return;
+        window.addEventListener("message", (e) => {
+          // message to @reactleaf/react-modal
+          if (e.data?.to && e.data?.to === "@reactleaf/react-modal") {
+            modalActions.openModal(
+              e.data.payload as OpenModalPayload<R, keyof R>
+            );
+          }
+        });
+      }, []);
 
       const TypedModalContext = ModalContext as React.Context<
         ModalContextType<R>

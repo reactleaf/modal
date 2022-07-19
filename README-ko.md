@@ -237,6 +237,26 @@ export interface ModalEvents {
 - `closeAll()`
 - `closeOnOverlayClick: true` - 유저가 모달 바깥(보통 어두운 색으로 가려두는)을 클릭한 경우, 가장 위에 열린 모달이 닫힙니다.
 
+## 훅을 사용하지 않고, 모달을 열 수 있을까요?
+
+`react-modal`에서는 `window.postMessage()`를 사용해, 모달을 열 수도 있습니다. 당신이 redux나 saga 같은 써드 파티 상태관리 라이브러리를 사용한다면, 컴포넌트 바깥에서 모달을 열어야 할 필요가 있을 수도 있습니다.
+
+하지만 주의하세요: `postMessage`를 사용할 때는 타입 체크를 **할 수 없습니다.** 또한, props에 함수를 전달할 수 없습니다. 만약 열려는 모달이 `onConfirm` 같은 함수를 받아야 한다면, `postMessage`로 여는 데에 문제가 생깁니다.
+
+postMessage 로는 모달을 열 수만 있습니다. 메시지로 모달을 닫을 수 없다는 점을 염두에 두세요.
+
+```typescript
+window.postMessage({
+  to: "@reactleaf/react-modal",
+  payload: {
+    type: "Example",
+    props: {
+      warning: "postMessage는 Serializable 한 값만 전달할 수 있습니다.",
+    },
+  },
+});
+```
+
 ### BasicModalProps
 
 모달이 `openModal()`에 의해 열리면, props로 전달했던 것 외에 두 가지 props가 추가로 삽입됩니다.
