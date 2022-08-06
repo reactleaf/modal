@@ -12,7 +12,7 @@ const Slideup: React.FC<Props> = ({
   confirmText = "Close",
   close,
 }) => {
-  const classNames = ["slideup modal", visible && "visible"]
+  const classNames = ["slideup", "modal", visible && "visible"]
     .filter((e) => e)
     .join(" ");
 

@@ -80,7 +80,10 @@ const ModalOverlay: React.FC<OverlayProps> = ({
 }) => {
   // animated close
   const [visible, setVisible] = useState(false);
-  useEffect(() => void window.setTimeout(() => setVisible(true)), []);
+  useEffect(
+    () => void window.requestAnimationFrame(() => setVisible(true)),
+    []
+  );
 
   function delayedClose() {
     setVisible(false);

@@ -40,7 +40,9 @@ function bindActionCreator<A, C extends ActionCreator<A>>(
 export const withModal =
   <R extends Register>(
     register: R,
-    defaultOverlayOptions?: Partial<OverlayOptions>
+    defaultOverlayOptions?: { default?: Partial<OverlayOptions> } & {
+      [key in keyof R]?: Partial<OverlayOptions>;
+    }
   ) =>
   <P,>(Component: React.ComponentType<P>) => {
     function openModal(payload: OpenModalPayload<R, keyof R>) {
@@ -55,7 +57,8 @@ export const withModal =
           props: payload.props,
           overlayOptions: Object.assign(
             {},
-            defaultOverlayOptions,
+            defaultOverlayOptions?.default,
+            defaultOverlayOptions?.[payload.type],
             payload.overlayOptions
           ),
           events: payload.events,

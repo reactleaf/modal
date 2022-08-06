@@ -131,11 +131,34 @@ useEffect(() => {
 
 ## Props
 
-#### withModal(register)(App)
+#### withModal(register, defaultOverlayOptions?)(App)
 
 - `register` - your modal register
+- `defaultOverlayOptions` - Set default value of overlayOptions.
 - `App` - your App
 - `returns` - Higher ordered App
+
+How to use `defaultOverlayOptions`:
+
+```typescript
+type defaultOverlayOptions = {
+  [key in keyof Register]?: Partial<OverlayOptions>;
+} & { default?: Partial<OverlayOptions> };
+
+// just use as default. default values are decribed on openModal()'s description.
+export default withModal(register)(App);
+// apply to every modal
+export default withModal(register, { default: { closeDelay: 300 } })(App);
+// or apply to specific modal
+export default withModal(register, { MyAnimatingModal: { closeDelay: 500 } })(
+  App
+);
+// or both. surely, settings on specific modal will override default
+export default withModal(register, {
+  default: { closeDelay: 300 },
+  MyAnimatingModal: { closeDelay: 500 },
+})(App);
+```
 
 #### createModalHook<Register>()
 

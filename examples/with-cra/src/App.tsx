@@ -37,7 +37,6 @@ function App() {
     openModal({
       type: "Slideup",
       props: { message: "Tada!" },
-      overlayOptions: { closeDelay: 500 },
     });
   }
 
@@ -50,4 +49,4 @@ function App() {
   );
 }
 
-export default withModal(register)(App);
+export default withModal(register, { Slideup: { closeDelay: 500 } })(App);
