@@ -40,18 +40,17 @@ But in some cases, you may need to pre-load some modals before they are opened. 
 ### Modal Context
 
 Now provide this register to your app.
-This HoC will provide modalContext to your app, and also modal container, that modals will be rendered.
+This Provider will provide modalContext to your app, and also modal container, that modals will be rendered.
 **How Simple!**
 
-```typescript
-import { withModal } from "@reactleaf/react-modal";
+```tsx
+import { ModalProvider } from "@reactleaf/react-modal";
 import register from "./modals/register";
 
 function App() {
   ...
+  return <ModalProvider register={register}>{...}</ModalProvider>
 }
-
-export default withModal(register)(App);
 ```
 
 ### useModal Hook
@@ -114,33 +113,55 @@ useEffect(() => {
 
 ## Props
 
-#### withModal(register, defaultOverlayOptions?)(App)
+#### <ModalProvider />
 
 - `register` - your modal register
 - `defaultOverlayOptions` - Set default value of overlayOptions.
-- `App` - your App
-- `returns` - Higher ordered App
 
 How to use `defaultOverlayOptions`:
 
-```typescript
+```tsx
 type defaultOverlayOptions = {
   [key in keyof Register]?: Partial<OverlayOptions>;
 } & { default?: Partial<OverlayOptions> };
 
 // just use as default. default values are decribed on openModal()'s description.
-export default withModal(register)(App);
-// apply to every modal
-export default withModal(register, { default: { closeDelay: 300 } })(App);
-// or apply to specific modal
-export default withModal(register, { MyAnimatingModal: { closeDelay: 500 } })(
-  App
+return (
+  <ModalProvider register={register}>
+    <App />
+  </ModalProvider>
 );
+// apply to every modal
+return (
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{ default: { closeDelay: 300 } }}
+  >
+    <App />
+  </ModalProvider>
+);
+// or apply to specific modal
+return (
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{ MyAnimatingModal: { closeDelay: 500 } }}
+  >
+    <App />
+  </ModalProvider>
+);
+
 // or both. surely, settings on specific modal will override default
-export default withModal(register, {
-  default: { closeDelay: 300 },
-  MyAnimatingModal: { closeDelay: 500 },
-})(App);
+return (
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{
+      default: { closeDelay: 300 },
+      MyAnimatingModal: { closeDelay: 500 },
+    }}
+  >
+    <App />
+  </ModalProvider>
+);
 ```
 
 #### createModalHook<Register>()

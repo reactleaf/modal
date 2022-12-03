@@ -1,5 +1,6 @@
 import { BasicModalProps } from "@reactleaf/react-modal";
 
+import "../modal.css";
 import "./style.css";
 
 interface Props extends BasicModalProps {

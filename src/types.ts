@@ -51,6 +51,10 @@ export type EnhancedModalPayload<
   id: string;
 };
 
+export interface CloseModalPayload {
+  id: string;
+}
+
 export interface OverlayOptions {
   className?: string;
   closeDelay?: number;

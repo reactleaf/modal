@@ -1,6 +1,6 @@
 import "./App.css";
 import "@reactleaf/react-modal/style.css";
-import { withModal } from "@reactleaf/react-modal";
+import { ModalProvider } from "@reactleaf/react-modal";
 import { useModal, preloadModal } from "./modals/useModal";
 import register from "./modals/register";
 import { useEffect } from "react";
@@ -9,7 +9,7 @@ function App() {
   const { openModal } = useModal();
 
   useEffect(() => {
-    preloadModal("Alert");
+    preloadModal("Slideup");
   }, []);
 
   function openAlert() {
@@ -49,4 +49,13 @@ function App() {
   );
 }
 
-export default withModal(register, { Slideup: { closeDelay: 500 } })(App);
+export default function AppWithProviders() {
+  return (
+    <ModalProvider
+      register={register}
+      defaultOverlayOptions={{ Slideup: { closeDelay: 500 } }}
+    >
+      <App />
+    </ModalProvider>
+  );
+}

@@ -38,18 +38,17 @@ export default register;
 ### 컨텍스트 사용하기
 
 이제 만들어둔 레지스터를 당신의 앱에 넣어주세요.
-react-modal은 이를 위해 `withModal`이란 이름의 고차 컴포넌트를 제공합니다. 이 컴포넌트는 모달 컨텍스트와 모달이 렌더링 될 모달 컨테이너를 한 번에 제공합니다.
+react-modal은 이를 위해 `<ModalProvider />` 컴포넌트를 제공합니다. 이 컴포넌트는 모달 컨텍스트와 모달이 렌더링 될 모달 컨테이너를 한 번에 제공합니다.
 **얼마나 간단한가요!**
 
-```typescript
-import { withModal } from "@reactleaf/react-modal";
+```tsx
+import { ModalProvider } from "@reactleaf/react-modal";
 import register from "./modals/register";
 
 function App() {
   ...
+  return <ModalProvider register={register}>{...}</ModalProvider>
 }
-
-export default withModal(register)(App);
 ```
 
 ### useModal 훅
@@ -112,33 +111,54 @@ useEffect(() => {
 
 ## Props
 
-#### withModal(register, defaultOverlayOptions?)(App)
+#### <ModalProvider />
 
 - `register` - 위에서 만든 레지스터를 넣습니다.
 - `defaultOverlayOptions` - 매번 overlayOptions를 설정하지 말고, 기본 옵션을 설정하세요.
-- `App` - 당신의 앱 컴포넌트입니다.
-- `returns` - 고차 컴포넌트로 감싸진 컴포넌트를 반환합니다.
 
 `defaultOverlayOptions` 은 아래와 같이 사용합니다.
 
-```typescript
+```tsx
 type defaultOverlayOptions = {
   [key in keyof Register]?: Partial<OverlayOptions>;
 } & { default?: Partial<OverlayOptions> };
 
 // 별 설정이 필요 없다면, 기본 값을 사용합니다. 기본값은 아래, openModal과 함께 설명됩니다.
-export default withModal(register)(App);
-// 모든 모달에 특별한 설정이 필요하다면, default 키를 사용하세요.
-export default withModal(register, { default: { closeDelay: 300 } })(App);
+return (
+  <ModalProvider register={register}>
+    <App />
+  </ModalProvider>
+);
+// 모든 모달에 적용할 커스터마이징이 필요하다면, default 키를 사용하세요.
+return (
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{ default: { closeDelay: 300 } }}
+  >
+    <App />
+  </ModalProvider>
+);
 // 특정 모달에만 특별한 설정을 하고 싶다면, 이렇게 하면 됩니다.
-export default withModal(register, { MyAnimatingModal: { closeDelay: 500 } })(
-  App
+return (
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{ MyAnimatingModal: { closeDelay: 500 } }}
+  >
+    <App />
+  </ModalProvider>
 );
 // 전체 설정과 모달 설정을 함께 사용할 수도 있습니다. 물론, 특정 모달에 대해 설정한 값은 전체 설정보다 우선순위가 높습니다.
-export default withModal(register, {
-  default: { closeDelay: 300 },
-  MyAnimatingModal: { closeDelay: 500 },
-})(App);
+return (
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{
+      default: { closeDelay: 300 },
+      MyAnimatingModal: { closeDelay: 500 },
+    }}
+  >
+    <App />
+  </ModalProvider>
+);
 ```
 
 #### createModalHook<Register>()
