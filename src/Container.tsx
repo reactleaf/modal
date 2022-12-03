@@ -6,7 +6,7 @@ import {
   EnhancedModalPayload,
   OverlayOptions,
 } from "./types";
-import { createModalHook } from "./withModal";
+import { createModalHook } from "./hooks";
 
 const useModal = createModalHook();
 

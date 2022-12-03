@@ -1,32 +1,13 @@
-import React, {
-  createContext,
-  Dispatch,
-  useContext,
-  useEffect,
-  useReducer,
-} from "react";
+import React, { Dispatch, useEffect, useReducer } from "react";
 
 import ModalContainer from "./Container";
+import { ModalContext, ModalContextType } from "./context";
 import {
   OpenModalPayload,
   EnhancedModalPayload,
   Register,
   OverlayOptions,
 } from "./types";
-
-type ModalContextType<R extends Register> = {
-  openedModals: OpenModalPayload<R, keyof R>[];
-  openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => string;
-  closeModal: (payload: { id: string }) => void;
-  closeAll: () => void;
-};
-
-const ModalContext = createContext({
-  openedModals: [] as unknown[],
-  openModal: (payload: any) => "",
-  closeModal: (payload: { id: string }) => void 0,
-  closeAll: () => void 0,
-});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ActionCreator<A> = { (...args: any[]): A };
@@ -136,13 +117,3 @@ export const withModal =
       );
     };
   };
-
-export const createModalHook = <R extends Register>() => {
-  return () => useContext(ModalContext as React.Context<ModalContextType<R>>);
-};
-
-export const createModalPreloader = <R extends Register>(register: R) => {
-  return (...modalNames: (keyof R)[]) => {
-    modalNames.forEach((key) => register[key]());
-  };
-};
