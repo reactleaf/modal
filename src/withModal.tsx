@@ -25,7 +25,7 @@ export const withModal =
       [key in keyof R]?: Partial<OverlayOptions>;
     }
   ) =>
-  <P extends JSX.IntrinsicAttributes>(Component: React.ComponentType<P>) => {
+  <P,>(Component: React.ComponentType<P>) => {
     function openModal(payload: OpenModalPayload<R, keyof R>) {
       // simple random hex generator
       const key = Math.floor(Math.random() * 0xffffffff)
@@ -75,7 +75,7 @@ export const withModal =
       }
     }
 
-    return function WithModal(props: P) {
+    return function WithModal(props: P & JSX.IntrinsicAttributes) {
       const [openedModals, dispatch] = useReducer(
         reducer,
         [] as EnhancedModalPayload<R, keyof R>[]
