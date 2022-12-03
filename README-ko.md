@@ -54,26 +54,9 @@ export default withModal(register)(App);
 
 ### useModal 훅
 
-모달을 열기 위해서는, `useModal` 훅을 사용해야 합니다.
-코드의 **타입-세이프**함을 유지하기 위해, `useModal`을 직접 import하지 마세요.
+useModal 훅은 직접 import 할 수 없습니다. createModalHook 을 사용해서 **만들어** 사용해야 합니다.
 
-#### 하지 마세요
-
-타입스크립트를 사용하지 않는다면, 이 방식을 사용해도 큰 차이가 없습니다.
-
-```typescript
-import { useModal } from "@reactleaf/react-modal";
-
-const { openModal } = useModal();
-function openAlert() {
-  // openModal cannot check types.
-  openModal({ type: "Alert", props: { title: "Hello" } });
-}
-```
-
-#### 추천하는 방법
-
-아래 방식을 사용하면, 모달의 type과 props가 서로 알맞게 입력되었는지 타입스크립트를 통해 체크할 수 있습니다.
+register의 타입을 받아 모달의 type과 props가 서로 알맞게 입력되었는지 체크하기 위해서입니다.
 
 ```typescript
 // useModal.ts
@@ -162,11 +145,6 @@ export default withModal(register, {
 
 ```typescript
 const useModal = createModalHook<typeof yourModalRegister>();
-```
-
-#### useModal()
-
-```typescript
 const { openModal, closeModal, closeAll, openedModals } = useModal();
 ```
 

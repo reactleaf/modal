@@ -6,7 +6,9 @@ import {
   EnhancedModalPayload,
   OverlayOptions,
 } from "./types";
-import { useModal } from "./withModal";
+import { createModalHook } from "./withModal";
+
+const useModal = createModalHook();
 
 interface Props<R extends Register> {
   register: R;

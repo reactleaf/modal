@@ -44,7 +44,7 @@ export const withModal =
       [key in keyof R]?: Partial<OverlayOptions>;
     }
   ) =>
-  <P,>(Component: React.ComponentType<P>) => {
+  <P extends JSX.IntrinsicAttributes>(Component: React.ComponentType<P>) => {
     function openModal(payload: OpenModalPayload<R, keyof R>) {
       // simple random hex generator
       const key = Math.floor(Math.random() * 0xffffffff)
@@ -136,14 +136,6 @@ export const withModal =
       );
     };
   };
-
-/**
- * not recommended to use directly,
- * use type-wrapped method
- *
- * const useModal = createModalHook<typeof register>()
- */
-export const useModal = () => useContext(ModalContext);
 
 export const createModalHook = <R extends Register>() => {
   return () => useContext(ModalContext as React.Context<ModalContextType<R>>);

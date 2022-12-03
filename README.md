@@ -56,26 +56,9 @@ export default withModal(register)(App);
 
 ### useModal Hook
 
-To open modal, you should use useModal hook.
-for **type-safe** of your code, do not use useModal directly.
+You cannot import useModal directly. call `createModalHook()` to make the hook.
 
-#### Don't
-
-If you are non-typescript user, it's okay to use this way.
-
-```typescript
-import { useModal } from "@reactleaf/react-modal";
-
-const { openModal } = useModal();
-function openAlert() {
-  // openModal cannot check types.
-  openModal({ type: "Alert", props: { title: "Hello" } });
-}
-```
-
-#### Recommended Way
-
-With this way, you can check type and props are properly provided.
+It is intended to inject type of register, to check modal type and props are properly provided.
 
 ```typescript
 // useModal.ts
@@ -164,12 +147,7 @@ export default withModal(register, {
 
 ```typescript
 const useModal = createModalHook<typeof yourModalRegister>();
-```
-
-#### useModal()
-
-```typescript
-const { openModal, closeAll } = useModal();
+const { openModal, closeModal, closeAll, openedModals } = useModal();
 ```
 
 #### openModal(payload)
