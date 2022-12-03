@@ -1,6 +1,6 @@
-# @reactleaf/react-modal
+# @reactleaf/modal
 
-[![npm version](https://badge.fury.io/js/@reactleaf%2Freact-modal.svg)](https://badge.fury.io/js/@reactleaf%2Freact-modal)
+[![npm version](https://badge.fury.io/js/@reactleaf%2Fmodal.svg)](https://badge.fury.io/js/@reactleaf%2Fmodal)
 
 컨텍스트와 훅을 사용하는 리액트 모달 라이브러리
 
@@ -13,9 +13,9 @@
 ## 설치 및 사용
 
 ```sh
-npm install @reactleaf/react-modal
+npm install @reactleaf/modal
 # 또는
-yarn add @reactleaf/react-modal
+yarn add @reactleaf/modal
 ```
 
 ### 모달 레지스터
@@ -38,11 +38,11 @@ export default register;
 ### 컨텍스트 사용하기
 
 이제 만들어둔 레지스터를 당신의 앱에 넣어주세요.
-react-modal은 이를 위해 `<ModalProvider />` 컴포넌트를 제공합니다. 이 컴포넌트는 모달 컨텍스트와 모달이 렌더링 될 모달 컨테이너를 한 번에 제공합니다.
+우리는 이를 위해 `<ModalProvider />` 컴포넌트를 제공합니다. 이 컴포넌트는 모달 컨텍스트와 모달이 렌더링 될 모달 컨테이너를 한 번에 제공합니다.
 **얼마나 간단한가요!**
 
 ```tsx
-import { ModalProvider } from "@reactleaf/react-modal";
+import { ModalProvider } from "@reactleaf/modal";
 import register from "./modals/register";
 
 function App() {
@@ -59,7 +59,7 @@ register의 타입을 받아 모달의 type과 props가 서로 알맞게 입력�
 
 ```typescript
 // useModal.ts
-import { createModalHook } from "@reactleaf/react-modal";
+import { createModalHook } from "@reactleaf/modal";
 import register from "./register";
 
 export const useModal = createModalHook<typeof register>();
@@ -93,14 +93,14 @@ function openAlert() {
 
 ### 모달 미리 불러오기
 
-`react-modal`은 모달을 열 때, dynamic import를 통해 모달을 불러옵니다. 이 방식을 통해 code-splitting이 쉬워지고, 초기 번들 사이즈도 줄일 수 있습니다.
+`@reactleaf/modal`은 모달을 열 때, dynamic import를 통해 모달을 불러옵니다. 이 방식을 통해 code-splitting이 쉬워지고, 초기 번들 사이즈도 줄일 수 있습니다.
 하지만 어떤 경우에는, 모달 코드가 페이지나 컴포넌트가 로딩될 시점에 함께 로드 되어있어야 할 수도 있습니다.
 가령 모달이 열리는 애니메이션을 넣은 경우, 혹은 모달이나 모달이 의존하는 라이브러리가 너무 커서 불러오는 데에 시간이 좀 걸리는 경우, 등이 있겠죠.
 그런 경우, 유저가 버튼을 클릭해 모달을 열기 전에, 모달 코드를 미리 불러와둘 수 있습니다.
 `preloadModal`을 사용하면, 레지스터에 등록된 `import()` 구문을 미리 실행해두어, `openModal()` 실행 시 코드를 불러오는데에 걸리는 시간을 없앱니다.
 
 ```typescript
-import { createModalPreloader } from "@reactleaf/react-modal";
+import { createModalPreloader } from "@reactleaf/modal";
 const preloadModal = createModalPreloader(register);
 
 // 이 컴포넌트가 불러와졌을 때, 컴포넌트에서 사용할 모달을 미리 불러옵니다.
@@ -235,7 +235,7 @@ export interface ModalEvents {
 
 당신만의 커스텀 모달을 구현할 때에는, `visible` 속성을 활용하세요. [아래](#BasicModalProps) 에서 visible 속성에 대해 더 자세히 알아보세요.
 닫히는 애니메이션을 구현할 때엔, `closeDelay` 옵션을 제대로 설정했는지 확인하세요.
-애니메이션이 동작하는 예제는 [Slideup 예제](https://github.com/reactleaf/react-modal/tree/main/examples/with-cra/src/modals/Slideup)에서 확인할 수 있습니다.
+애니메이션이 동작하는 예제는 [Slideup 예제](https://github.com/reactleaf/modal/tree/main/examples/with-cra/src/modals/Slideup)에서 확인할 수 있습니다.
 
 ```css
 .slideup {
@@ -260,7 +260,7 @@ export interface ModalEvents {
 
 ## 훅을 사용하지 않고, 모달을 열 수 있을까요?
 
-`react-modal`에서는 `window.postMessage()`를 사용해, 모달을 열 수도 있습니다. 당신이 redux나 saga 같은 써드 파티 상태관리 라이브러리를 사용한다면, 컴포넌트 바깥에서 모달을 열어야 할 필요가 있을 수도 있습니다.
+`@reactleaf/modal`에서는 `window.postMessage()`를 사용해, 모달을 열 수도 있습니다. 당신이 redux나 saga 같은 써드 파티 상태관리 라이브러리를 사용한다면, 컴포넌트 바깥에서 모달을 열어야 할 필요가 있을 수도 있습니다.
 
 하지만 주의하세요: `postMessage`를 사용할 때는 타입 체크를 **할 수 없습니다.** 또한, props에 함수를 전달할 수 없습니다. 만약 열려는 모달이 `onConfirm` 같은 함수를 받아야 한다면, `postMessage`로 여는 데에 문제가 생깁니다.
 
@@ -268,7 +268,7 @@ postMessage 로는 모달을 열 수만 있습니다. 메시지로 모달을 닫
 
 ```typescript
 window.postMessage({
-  to: "@reactleaf/react-modal",
+  to: "@reactleaf/modal",
   payload: {
     type: "Example",
     props: {
@@ -288,7 +288,7 @@ window.postMessage({
 이 props를 활용하기 위해서, 다음 방식으로 구현하시기를 추천합니다.
 
 ```tsx
-import { BasicModalProps } from "@reactleaf/react-modal";
+import { BasicModalProps } from "@reactleaf/modal";
 
 interface Props extends BasicModalProps {
   title: string;
@@ -297,8 +297,8 @@ interface Props extends BasicModalProps {
 const Alert = ({
   title,
   message,
-  visible, // injected by react-modal
-  close, // injected by react-modal
+  visible, // injected by modal
+  close, // injected by modal
 }: Props) => {
   return (
     <div className={cx("alert", "modal", { visible })}>
@@ -316,11 +316,11 @@ const Alert = ({
 
 ## 스타일링
 
-[기본 스타일 CSS 파일](https://github.com/reactleaf/react-modal/blob/main/style.css)을 제공하고 있습니다.
+[기본 스타일 CSS 파일](https://github.com/reactleaf/modal/blob/main/style.css)을 제공하고 있습니다.
 커스텀 스타일링이 필요 없으신 경우, 아래와 같이 import해서 사용할 수 있습니다.
 
 ```javascript
-import "@reactleaf/react-modal/style.css";
+import "@reactleaf/modal/style.css";
 ```
 
 혹은, 아래 클래스에 대한 스타일을 정의해, 당신만의 스타일링을 적용할 수 있습니다.
@@ -348,4 +348,4 @@ import "@reactleaf/react-modal/style.css";
 
 ## 동작하는 예제
 
-[예제 폴더](https://github.com/reactleaf/react-modal/tree/main/examples)에서 확인하세요.
+[예제 폴더](https://github.com/reactleaf/modal/tree/main/examples)에서 확인하세요.

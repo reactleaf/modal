@@ -1,6 +1,6 @@
-# @reactleaf/react-modal
+# @reactleaf/modal
 
-[![npm version](https://badge.fury.io/js/@reactleaf%2Freact-modal.svg)](https://badge.fury.io/js/@reactleaf%2Freact-modal)
+[![npm version](https://badge.fury.io/js/@reactleaf%2Fmodal.svg)](https://badge.fury.io/js/@reactleaf%2Fmodal)
 
 React modal with context and hooks
 
@@ -15,9 +15,9 @@ Second object ismodal code will not be loaded until modal is opened: Reduce bund
 ## Installation and Usage
 
 ```sh
-npm install @reactleaf/react-modal
+npm install @reactleaf/modal
 # or
-yarn add @reactleaf/react-modal
+yarn add @reactleaf/modal
 ```
 
 ### Modal Register
@@ -44,7 +44,7 @@ This Provider will provide modalContext to your app, and also modal container, t
 **How Simple!**
 
 ```tsx
-import { ModalProvider } from "@reactleaf/react-modal";
+import { ModalProvider } from "@reactleaf/modal";
 import register from "./modals/register";
 
 function App() {
@@ -61,7 +61,7 @@ It is intended to inject type of register, to check modal type and props are pro
 
 ```typescript
 // useModal.ts
-import { createModalHook } from "@reactleaf/react-modal";
+import { createModalHook } from "@reactleaf/modal";
 import register from "./register";
 
 export const useModal = createModalHook<typeof register>();
@@ -102,7 +102,7 @@ Then, you can preload modals before user click the button that opens modal.
 This calls `import()` from your register, to ensure `openModal()` runs synchronously.
 
 ```typescript
-import { createModalPreloader } from "@reactleaf/react-modal";
+import { createModalPreloader } from "@reactleaf/modal";
 const preloadModal = createModalPreloader(register);
 
 // when component mounted, load relative modals.
@@ -238,7 +238,7 @@ You can add Overlay styles like this.
 
 and also in your custom modal, has `visible` props. See [below](#BasicModalProps) to know more about visible props.
 Be sure that `closeDelay` option is properly set, if you want to animate on closing.
-See [Slideup Example](https://github.com/reactleaf/react-modal/tree/main/examples/with-cra/src/modals/Slideup).
+See [Slideup Example](https://github.com/reactleaf/modal/tree/main/examples/with-cra/src/modals/Slideup).
 
 ```css
 .slideup {
@@ -263,7 +263,7 @@ But there are some other ways.
 
 ## Can I open modals without hooks?
 
-`react-modal` recieves message, so you can use `window.postMessage()` to open modal. This is useful when you use third-party state control libraries, like redux-saga.
+`@reactleaf/modal` recieves message, so you can use `window.postMessage()` to open modal. This is useful when you use third-party state control libraries, like redux-saga.
 
 But be careful: `postMessage` is NOT GOOD for type checking, and cannot message functions. If your modal has props like `onConfirm`, `postMessage` cannot handle the props.
 
@@ -271,7 +271,7 @@ postMessage only can receive `openModal` payload. CANNOT CLOSE modals.
 
 ```typescript
 window.postMessage({
-  to: "@reactleaf/react-modal",
+  to: "@reactleaf/modal",
   payload: {
     type: "Example",
     props: { warning: "postMessage only can send SERIALIZABLE values." },
@@ -289,7 +289,7 @@ When modal is opened by `openModal`, 2 more props are injected to your modal.
 So, When implementing modal, you can consider `close` props like this.
 
 ```tsx
-import { BasicModalProps } from "@reactleaf/react-modal";
+import { BasicModalProps } from "@reactleaf/modal";
 
 interface Props extends BasicModalProps {
   title: string;
@@ -298,8 +298,8 @@ interface Props extends BasicModalProps {
 const Alert = ({
   title,
   message,
-  visible, // injected by react-modal
-  close, // injected by react-modal
+  visible, // injected by modal
+  close, // injected by modal
 }: Props) => {
   return (
     <div className={cx("alert", "modal", { visible })}>
@@ -317,11 +317,11 @@ const Alert = ({
 
 ## Styling
 
-There is [default style file](https://github.com/reactleaf/react-modal/blob/main/style.css)
+There is [default style file](https://github.com/reactleaf/modal/blob/main/style.css)
 You can import this
 
 ```javascript
-import "@reactleaf/react-modal/style.css";
+import "@reactleaf/modal/style.css";
 ```
 
 or make or override your own styles.
@@ -350,4 +350,4 @@ You can add className to each modal, so every overlay element can have different
 
 ## Working Examples
 
-See more on [Examples](https://github.com/reactleaf/react-modal/tree/main/examples)
+See more on [Examples](https://github.com/reactleaf/modal/tree/main/examples)

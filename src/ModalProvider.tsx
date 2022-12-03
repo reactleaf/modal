@@ -24,8 +24,8 @@ export const ModalProvider = <R extends Register>({
   useEffect(() => {
     if (typeof window === "undefined") return;
     const messageHandler = (e: MessageEvent) => {
-      // message to @reactleaf/react-modal
-      if (e.data?.to && e.data?.to === "@reactleaf/react-modal") {
+      // message to @reactleaf/modal
+      if (e.data?.to && e.data?.to === "@reactleaf/modal") {
         actions.openModal(e.data.payload as OpenModalPayload<R, keyof R>);
       }
     };
