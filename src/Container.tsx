@@ -7,6 +7,7 @@ import {
   OverlayOptions,
 } from "./types";
 import { createModalHook } from "./hooks";
+import { ModalContext } from "./context";
 
 const useModal = createModalHook();
 
@@ -42,7 +43,7 @@ function OpenedModal<R extends Register>({
   overlayOptions,
   events,
 }: OpenedModalProps<R>) {
-  const { closeModal } = useModal();
+  const context = useModal();
   const [Component, setComponent] = useState<React.ComponentType>();
 
   // asynchronously import modal file: for reduce bundle size.
@@ -56,14 +57,16 @@ function OpenedModal<R extends Register>({
 
   function close() {
     events?.onClose?.();
-    closeModal({ id });
+    context.closeModal({ id });
   }
 
   if (!Component) return null;
   return (
-    <ModalOverlay {...overlayOptions} closeSelf={close}>
-      <Component {...props} />
-    </ModalOverlay>
+    <ModalContext.Provider value={{ ...context, closeSelf: close }}>
+      <ModalOverlay {...overlayOptions} closeSelf={close}>
+        <Component {...props} />
+      </ModalOverlay>
+    </ModalContext.Provider>
   );
 }
 

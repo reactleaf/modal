@@ -6,11 +6,15 @@ export type ModalContextType<R extends Register> = {
   openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => string;
   closeModal: (payload: { id: string }) => void;
   closeAll: () => void;
+
+  /* only works inside of modal */
+  closeSelf(): void;
 };
 
-export const ModalContext = createContext({
-  openedModals: [] as unknown[],
+export const ModalContext = createContext<ModalContextType<any>>({
+  openedModals: [],
   openModal: (payload: any) => "",
   closeModal: (payload: { id: string }) => void 0,
   closeAll: () => void 0,
+  closeSelf: () => void 0,
 });

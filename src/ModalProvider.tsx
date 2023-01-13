@@ -35,8 +35,12 @@ export const ModalProvider = <R extends Register>({
 
   const TypedModalContext = ModalContext as React.Context<ModalContextType<R>>;
 
+  // provide dummy closeSelf(), but it's not available outside of modal
+  const closeSelf = () =>
+    console.error("closeSelf is not available outside of modal");
+
   return (
-    <TypedModalContext.Provider value={{ openedModals, ...actions }}>
+    <TypedModalContext.Provider value={{ openedModals, ...actions, closeSelf }}>
       {children}
       <ModalContainer register={register} openedModals={openedModals} />
     </TypedModalContext.Provider>
