@@ -20,7 +20,7 @@ function ModalContainer<R extends Register>({
   openedModals,
 }: Props<R>) {
   return (
-    <div id="modal-root">
+    <div id="modal-root" data-class="reactleaf">
       {openedModals.map((modalState) => {
         const props: OpenedModalProps<typeof register> = {
           importer: register[modalState.type],
@@ -114,6 +114,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
   return (
     <div
       className={cx("modal-overlay", className, { dim, visible })}
+      data-class="reactleaf"
       onClick={onClick}
     >
       {cloneElement(children, { close: delayedClose, visible })}
