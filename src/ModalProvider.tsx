@@ -7,18 +7,14 @@ import { OpenModalPayload, Register, OverlayOptions } from "./types";
 
 interface Props<R extends Register> {
   register: R;
-  defaultOverlayOptions?: { default?: Partial<OverlayOptions> } & {
-    [key in keyof R]?: Partial<OverlayOptions>;
-  };
+  defaultOverlayOptions?: Partial<OverlayOptions>;
 }
 export const ModalProvider = <R extends Register>({
   register,
   defaultOverlayOptions,
   children,
 }: React.PropsWithChildren<Props<R>>) => {
-  const { openedModals, ...actions } = useModalReducer<R>(
-    defaultOverlayOptions
-  );
+  const { openedModals, ...actions } = useModalReducer<R>();
 
   // can open modal with window.postMessage
   useEffect(() => {
@@ -40,7 +36,9 @@ export const ModalProvider = <R extends Register>({
     console.error("closeSelf is not available outside of modal");
 
   return (
-    <TypedModalContext.Provider value={{ openedModals, ...actions, closeSelf }}>
+    <TypedModalContext.Provider
+      value={{ openedModals, defaultOverlayOptions, ...actions, closeSelf }}
+    >
       {children}
       <ModalContainer register={register} openedModals={openedModals} />
     </TypedModalContext.Provider>

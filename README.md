@@ -121,9 +121,7 @@ useEffect(() => {
 How to use `defaultOverlayOptions`:
 
 ```tsx
-type defaultOverlayOptions = {
-  [key in keyof Register]?: Partial<OverlayOptions>;
-} & { default?: Partial<OverlayOptions> };
+type defaultOverlayOptions = Partial<OverlayOptions>;
 
 // just use as default. default values are decribed on openModal()'s description.
 return (
@@ -135,29 +133,7 @@ return (
 return (
   <ModalProvider
     register={register}
-    defaultOverlayOptions={{ default: { closeDelay: 300 } }}
-  >
-    <App />
-  </ModalProvider>
-);
-// or apply to specific modal
-return (
-  <ModalProvider
-    register={register}
-    defaultOverlayOptions={{ MyAnimatingModal: { closeDelay: 500 } }}
-  >
-    <App />
-  </ModalProvider>
-);
-
-// or both. surely, settings on specific modal will override default
-return (
-  <ModalProvider
-    register={register}
-    defaultOverlayOptions={{
-      default: { closeDelay: 300 },
-      MyAnimatingModal: { closeDelay: 500 },
-    }}
+    defaultOverlayOptions={{ closeDelay: 300 }}
   >
     <App />
   </ModalProvider>
@@ -220,6 +196,43 @@ Close all opened modals
 #### openedModals: OpenModalPayload[]
 
 Returns opened modals. It is an array of the OpenModalPayload, so you can check any modal is opened, or some type of modal is opened or not.
+
+### OverlayOptions
+
+There are three points that you could set overlay options.
+
+1. `openModal({ type: "...", overlayOptions: HERE })`
+
+- This options are applied ONLY that modal opens.
+
+2. When you exports Modal Components
+
+- This options are applied to ALL of these type modals.
+
+```tsx
+// register
+  ...
+  'common/Alert': () => import('./Alert'),
+
+// ./Alert.tsx
+export const defaultOverlayOptions = { HERE };
+
+export default function Alert(props) {
+  return ...
+}
+```
+
+3. When setting MoalProvider
+
+- This options are applied to ALL TYPE OF modals.
+
+```tsx
+<ModalProvider register={register} defaultOverlayOptions={HERE}>
+  <YourApp />
+</ModalProvider>
+```
+
+The first one has higher priority, and last one has lower.
 
 ## How to add opening / closing animation?
 

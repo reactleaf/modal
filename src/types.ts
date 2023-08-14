@@ -1,6 +1,9 @@
 import React from "react";
 
-export type Importer = () => Promise<{ default: React.ComponentType<any> }>;
+export type Importer = () => Promise<{
+  default: React.ComponentType<any>;
+  defaultOverlayOptions?: Partial<OverlayOptions>;
+}>;
 export interface Register {
   [key: string]: Importer;
 }

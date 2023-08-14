@@ -218,6 +218,43 @@ export interface ModalEvents {
 
 열려있는 모달 목록을 반환합니다. 모달이 하나라도 열려있는지, 특정 타입 모달이 열려있는지, 등을 체크할 수 있습니다.
 
+### OverlayOptions
+
+모달의 오버레이 설정은 세 곳에서 이루어집니다.
+
+1. `openModal({ type: "...", overlayOptions: 여기 })`
+
+- 여기에 설정한 옵션은 이 함수를 통해 연 모달에만 적용됩니다.
+
+2. 모달 컴포넌트의 선언부
+
+- 여기에 설정한 옵션은 이 컴포넌트 타입의 모달을 열 때, 적용됩니다.
+
+```tsx
+// register
+  ...
+  'common/Alert': () => import('./Alert'),
+
+// ./Alert.tsx
+export const defaultOverlayOptions = { 여기 };
+
+export default function Alert(props) {
+  return ...
+}
+```
+
+3. `<MoalProvider />` 에서
+
+- 여기에 설정한 옵션은 **모든** 모달에 적용됩니다.
+
+```tsx
+<ModalProvider register={register} defaultOverlayOptions={여기}>
+  <YourApp />
+</ModalProvider>
+```
+
+첫 번째 것이 우선순위가 가장 높고, 마지막에 소개한 방식이 우선순위가 가장 낮습니다.
+
 ## 모달이 열리고 닫히는 애니메이션을 넣으려면 어떻게 해야 하나요?
 
 애니메이션이 돌아가게 하기 위해, 모달은 사실 `openModal()` 실행 시점보다 한 프레임 뒤늦게 열립니다.

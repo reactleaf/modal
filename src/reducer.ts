@@ -3,15 +3,10 @@ import {
   CloseModalPayload,
   EnhancedModalPayload,
   OpenModalPayload,
-  OverlayOptions,
   Register,
 } from "./types";
 
-export default function useModalReducer<R extends Register>(
-  defaultOverlayOptions?: { default?: Partial<OverlayOptions> } & {
-    [key in keyof R]?: Partial<OverlayOptions>;
-  }
-) {
+export default function useModalReducer<R extends Register>() {
   function reducer(
     state: EnhancedModalPayload<R, keyof R>[],
     action: ModalAction
@@ -39,15 +34,7 @@ export default function useModalReducer<R extends Register>(
     return {
       type: "@modal/OPEN_MODAL" as const,
       payload: {
-        type: payload.type,
-        props: payload.props,
-        overlayOptions: Object.assign(
-          {},
-          defaultOverlayOptions?.default,
-          defaultOverlayOptions?.[payload.type],
-          payload.overlayOptions
-        ),
-        events: payload.events,
+        ...payload,
         id: `${String(payload.type)}_${key}`,
       } as EnhancedModalPayload<R, keyof R>,
     };

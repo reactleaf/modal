@@ -44,15 +44,13 @@ function OpenedModal<R extends Register>({
   events,
 }: OpenedModalProps<R>) {
   const context = useModal();
-  const [Component, setComponent] = useState<React.ComponentType>();
+  const [module, setModule] = useState<Awaited<ReturnType<Importer>>>();
 
   // asynchronously import modal file: for reduce bundle size.
   // this may trigger initial openModal could be delayed.
   // if you don't want to be delayed, use usePreloadModal hook
   useEffect(() => {
-    void importer().then((modal) => {
-      setComponent(() => modal.default);
-    });
+    void importer().then(setModule);
   }, [type]);
 
   function close() {
@@ -60,10 +58,19 @@ function OpenedModal<R extends Register>({
     context.closeModal({ id });
   }
 
-  if (!Component) return null;
+  if (!module) return null;
+
+  const Component = module.default;
+  const overlayProps = Object.assign(
+    {},
+    context.defaultOverlayOptions,
+    module.defaultOverlayOptions,
+    overlayOptions
+  );
+
   return (
     <ModalContext.Provider value={{ ...context, closeSelf: close }}>
-      <ModalOverlay {...overlayOptions} closeSelf={close}>
+      <ModalOverlay {...overlayProps} closeSelf={close}>
         <Component {...props} />
       </ModalOverlay>
     </ModalContext.Provider>
