@@ -1,8 +1,13 @@
 import { createContext } from "react";
-import { OpenModalPayload, OverlayOptions, Register } from "./types";
+import {
+  EnhancedModalPayload,
+  OpenModalPayload,
+  OverlayOptions,
+  Register,
+} from "./types";
 
 export type ModalContextType<R extends Register> = {
-  openedModals: OpenModalPayload<R, keyof R>[];
+  openedModals: EnhancedModalPayload<R, keyof R>[];
   defaultOverlayOptions?: Partial<OverlayOptions>;
   openModal: <T extends keyof R>(payload: OpenModalPayload<R, T>) => string;
   closeModal: (payload: { id: string }) => void;
