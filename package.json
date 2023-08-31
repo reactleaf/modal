@@ -1,11 +1,11 @@
 {
   "name": "@reactleaf/modal",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "React Modal Library with context",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "tsc && cp style.css dist",
+    "build": "tsc",
     "prepublishOnly": "npm run build",
     "deploy-example": "cd examples/with-cra && rm -rf node_modules/.cache && npm run build && touch build/.nojekyll && git add -f build/ && git branch -D gh-pages && git checkout -b gh-pages && git commit -m 'Deploy Example to gh-pages' && git push -f origin gh-pages:gh-pages && git checkout main"
   },
