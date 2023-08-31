@@ -53,6 +53,10 @@ function OpenedModal<R extends Register>({
     void importer().then(setModule);
   }, [type]);
 
+  useEffect(() => {
+    events?.onOpen?.({ type, id, props });
+  }, []);
+
   function close() {
     events?.onClose?.();
     context.closeModal({ id });

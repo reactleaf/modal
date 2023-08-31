@@ -38,13 +38,13 @@ export type OpenModalPayload<R extends Register, T extends keyof R> = Equals<
       type: T;
       props?: ModalOwnProps<R[T]>;
       overlayOptions?: OverlayOptions;
-      events?: ModalEvents;
+      events?: ModalEvents<R, T>;
     }
   : {
       type: T;
       props: ModalOwnProps<R[T]>;
       overlayOptions?: OverlayOptions;
-      events?: ModalEvents;
+      events?: ModalEvents<R, T>;
     };
 
 export type EnhancedModalPayload<
@@ -66,6 +66,9 @@ export interface OverlayOptions {
   preventScroll?: boolean;
 }
 
-export interface ModalEvents {
+export interface ModalEvents<R extends Register, T extends keyof R> {
+  onOpen?(
+    payload: Pick<OpenModalPayload<R, T>, "type" | "props"> & { id: string }
+  ): void;
   onClose?(): void;
 }
