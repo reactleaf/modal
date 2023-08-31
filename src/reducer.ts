@@ -28,15 +28,12 @@ export default function useModalReducer<R extends Register>() {
 
   function openModal(payload: OpenModalPayload<R, keyof R>) {
     // simple random hex generator
-    const key = Math.floor(Math.random() * 0xffffffff)
+    const id = Math.floor(Math.random() * 0xffffffff)
       .toString(16)
       .padStart(8, "0");
     return {
       type: "@modal/OPEN_MODAL" as const,
-      payload: {
-        ...payload,
-        id: `${String(payload.type)}_${key}`,
-      } as EnhancedModalPayload<R, keyof R>,
+      payload: { ...payload, id } as EnhancedModalPayload<R, keyof R>,
     };
   }
   function closeModal(payload: CloseModalPayload) {
