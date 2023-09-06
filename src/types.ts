@@ -19,7 +19,7 @@ export type ModalOwnProps<I extends Importer> = I extends Importer
   : never;
 
 export interface BasicModalProps {
-  close(): void;
+  close(): Promise<unknown>;
   visible: boolean; // for animation
 }
 
@@ -66,9 +66,8 @@ export interface OverlayOptions {
   preventScroll?: boolean;
 }
 
-export interface ModalEvents<R extends Register, T extends keyof R> {
+export type ModalEvents<R extends Register, T extends keyof R> = {
   onOpen?(
     payload: Pick<OpenModalPayload<R, T>, "type" | "props"> & { id: string }
   ): void;
-  onClose?(): void;
-}
+} & { onClose?(): void | PromiseLike<unknown> };

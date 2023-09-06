@@ -58,8 +58,8 @@ function OpenedModal<R extends Register>({
   }, []);
 
   function close() {
-    events?.onClose?.();
     context.closeModal({ id });
+    return events?.onClose?.();
   }
 
   if (!module) return null;
@@ -82,7 +82,7 @@ function OpenedModal<R extends Register>({
 }
 
 interface OverlayProps extends OverlayOptions {
-  closeSelf: () => void;
+  closeSelf: () => void | PromiseLike<unknown>;
   children: React.ReactElement;
 }
 const ModalOverlay: React.FC<OverlayProps> = ({
@@ -101,9 +101,10 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     []
   );
 
-  function delayedClose() {
+  async function delayedClose() {
     setVisible(false);
-    setTimeout(closeSelf, closeDelay);
+    await sleep(closeDelay);
+    return closeSelf();
   }
 
   const onClick = (e: React.MouseEvent) => {
@@ -132,4 +133,10 @@ const ModalOverlay: React.FC<OverlayProps> = ({
     </div>
   );
 };
+
 export default ModalContainer;
+
+function sleep(ms: number) {
+  if (ms === 0) return;
+  return new Promise((res) => setTimeout(res, ms));
+}
