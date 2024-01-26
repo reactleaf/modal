@@ -1,5 +1,8 @@
 import React from "react";
 
+type Await<T> = T extends PromiseLike<infer U> ? U : T;
+type PromiseOr<T> = T | Promise<T>;
+
 export type Importer = () => Promise<{
   default: React.ComponentType<any>;
   defaultOverlayOptions?: Partial<OverlayOptions>;
@@ -8,15 +11,9 @@ export interface Register {
   [key: string]: Importer;
 }
 
-type Await<T> = T extends PromiseLike<infer U> ? U : T;
+export type ModalProps<I extends Importer> = React.ComponentProps<Await<ReturnType<I>>["default"]>;
 
-export type ModalProps<I extends Importer> = React.ComponentProps<
-  Await<ReturnType<I>>["default"]
->;
-
-export type ModalOwnProps<I extends Importer> = I extends Importer
-  ? Omit<ModalProps<I>, keyof BasicModalProps>
-  : never;
+export type ModalOwnProps<I extends Importer> = I extends Importer ? Omit<ModalProps<I>, keyof BasicModalProps> : never;
 
 export interface BasicModalProps {
   close(): Promise<unknown>;
@@ -24,16 +21,9 @@ export interface BasicModalProps {
 }
 
 // from @type-challenges/utils
-type Equals<X, Y> = (() => Y extends X ? 1 : 2) extends () => X extends Y
-  ? 1
-  : 2
-  ? true
-  : false;
+type Equals<X, Y> = (() => Y extends X ? 1 : 2) extends () => X extends Y ? 1 : 2 ? true : false;
 
-export type OpenModalPayload<R extends Register, T extends keyof R> = Equals<
-  ModalOwnProps<R[T]>,
-  {}
-> extends true
+export type OpenModalPayload<R extends Register, T extends keyof R> = Equals<ModalOwnProps<R[T]>, {}> extends true
   ? {
       type: T;
       props?: ModalOwnProps<R[T]>;
@@ -47,10 +37,7 @@ export type OpenModalPayload<R extends Register, T extends keyof R> = Equals<
       events?: ModalEvents<R, T>;
     };
 
-export type EnhancedModalPayload<
-  R extends Register,
-  T extends keyof R
-> = OpenModalPayload<R, T> & {
+export type EnhancedModalPayload<R extends Register, T extends keyof R> = OpenModalPayload<R, T> & {
   id: string;
 };
 
@@ -67,7 +54,7 @@ export interface OverlayOptions {
 }
 
 export type ModalEvents<R extends Register, T extends keyof R> = {
-  onOpen?(
-    payload: Pick<OpenModalPayload<R, T>, "type" | "props"> & { id: string }
-  ): void;
-} & { onClose?(): void | PromiseLike<unknown> };
+  onOpen?(payload: Pick<OpenModalPayload<R, T>, "type" | "props"> & { id: string }): void;
+  beforeClose?(): PromiseOr<unknown>;
+  onClose?(): unknown;
+};

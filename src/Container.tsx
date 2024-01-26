@@ -1,11 +1,6 @@
 import React, { useEffect, useState, cloneElement } from "react";
 import cx from "classnames";
-import {
-  Importer,
-  Register,
-  EnhancedModalPayload,
-  OverlayOptions,
-} from "./types";
+import { Importer, Register, EnhancedModalPayload, OverlayOptions } from "./types";
 import { createModalHook } from "./hooks";
 import { ModalContext } from "./context";
 
@@ -15,10 +10,7 @@ interface Props<R extends Register> {
   register: R;
   openedModals: EnhancedModalPayload<R, keyof R>[];
 }
-function ModalContainer<R extends Register>({
-  register,
-  openedModals,
-}: Props<R>) {
+function ModalContainer<R extends Register>({ register, openedModals }: Props<R>) {
   return (
     <div id="modal-root" data-class="reactleaf">
       {openedModals.map((modalState) => {
@@ -35,14 +27,7 @@ function ModalContainer<R extends Register>({
 type OpenedModalProps<R extends Register> = EnhancedModalPayload<R, keyof R> & {
   importer: Importer;
 };
-function OpenedModal<R extends Register>({
-  importer,
-  type,
-  id,
-  props,
-  overlayOptions,
-  events,
-}: OpenedModalProps<R>) {
+function OpenedModal<R extends Register>({ importer, type, id, props, overlayOptions, events }: OpenedModalProps<R>) {
   const context = useModal();
   const [module, setModule] = useState<Awaited<ReturnType<Importer>>>();
 
@@ -57,7 +42,8 @@ function OpenedModal<R extends Register>({
     events?.onOpen?.({ type, id, props });
   }, []);
 
-  function close() {
+  async function close() {
+    await events?.beforeClose?.();
     context.closeModal({ id });
     return events?.onClose?.();
   }
@@ -65,12 +51,7 @@ function OpenedModal<R extends Register>({
   if (!module) return null;
 
   const Component = module.default;
-  const overlayProps = Object.assign(
-    {},
-    context.defaultOverlayOptions,
-    module.defaultOverlayOptions,
-    overlayOptions
-  );
+  const overlayProps = Object.assign({}, context.defaultOverlayOptions, module.defaultOverlayOptions, overlayOptions);
 
   return (
     <ModalContext.Provider value={{ ...context, closeSelf: close }}>
@@ -96,10 +77,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
 }) => {
   // animated close
   const [visible, setVisible] = useState(false);
-  useEffect(
-    () => void window.requestAnimationFrame(() => setVisible(true)),
-    []
-  );
+  useEffect(() => void window.requestAnimationFrame(() => setVisible(true)), []);
 
   async function delayedClose() {
     setVisible(false);
@@ -124,11 +102,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
   }, []);
 
   return (
-    <div
-      className={cx("modal-overlay", className, { dim, visible })}
-      data-class="reactleaf"
-      onClick={onClick}
-    >
+    <div className={cx("modal-overlay", className, { dim, visible })} data-class="reactleaf" onClick={onClick}>
       {cloneElement(children, { close: delayedClose, visible })}
     </div>
   );

@@ -6,9 +6,9 @@
 
 ## 목적
 
-이 라이브러리는 고차 컴포넌트를 사용해 컨텍스트와 모달 컨테이너를 제공합니다. 또한 모달을 열고 닫는 데 필요한 함수를 훅을 통해 제공합니다.
+이 라이브러리는 `<ModalProvider />`를 통해 컨텍스트와 모달 컨테이너를 제공합니다. 또한 모달을 열고 닫는 데 필요한 함수를 훅을 통해 제공합니다.
 주된 목적은 **어떤** 모달이든 당신의 코드 **어디서든** 열 수 있는 **타입-세이프**한 방식을 제공하는 것입니다.
-거기에 더해, 당신이 작성한 모달 코드가 모달이 열리기 전까지는 로드되지 않는 목표가 있습니다: 번들 사이즈를 줄이기 위한 것이죠.
+거기에 더해, 모달에 사용되는 코드가 모달이 열리기 전까지는 로드되지 않도록 합니다: 번들 사이즈를 줄이기 위한 것이죠.
 
 ## 설치 및 사용
 
@@ -33,7 +33,7 @@ const register = {
 export default register;
 ```
 
-하지만 특수한 경우에는 모달을 열기 전에 미리 로드시켜두는 것이 유리할 수 있습니다. 그런 경우, [아래](#preload-modals)를 확인해주세요.
+하지만 특수한 경우에는 모달을 열기 전에 미리 불러와 두는 것이 유리할 수 있습니다. 그런 경우, [아래](#모달-미리-불러오기)를 확인해주세요.
 
 ### 컨텍스트 사용하기
 
@@ -55,7 +55,7 @@ function App() {
 
 useModal 훅은 직접 import 할 수 없습니다. createModalHook 을 사용해서 **만들어** 사용해야 합니다.
 
-register의 타입을 받아 모달의 type과 props가 서로 알맞게 입력되었는지 체크하기 위해서입니다.
+register의 타입을 통해 모달의 type과 props가 서로 알맞게 입력되었는지 체크하기 위해서입니다.
 
 ```typescript
 // useModal.ts
@@ -131,19 +131,13 @@ return (
 );
 // 모든 모달에 적용할 커스터마이징이 필요하다면, default 키를 사용하세요.
 return (
-  <ModalProvider
-    register={register}
-    defaultOverlayOptions={{ default: { closeDelay: 300 } }}
-  >
+  <ModalProvider register={register} defaultOverlayOptions={{ default: { closeDelay: 300 } }}>
     <App />
   </ModalProvider>
 );
 // 특정 모달에만 특별한 설정을 하고 싶다면, 이렇게 하면 됩니다.
 return (
-  <ModalProvider
-    register={register}
-    defaultOverlayOptions={{ MyAnimatingModal: { closeDelay: 500 } }}
-  >
+  <ModalProvider register={register} defaultOverlayOptions={{ "@MyAnimatingModal": { closeDelay: 500 } }}>
     <App />
   </ModalProvider>
 );
@@ -153,7 +147,7 @@ return (
     register={register}
     defaultOverlayOptions={{
       default: { closeDelay: 300 },
-      MyAnimatingModal: { closeDelay: 500 },
+      "@MyAnimatingModal": { closeDelay: 500 },
     }}
   >
     <App />
@@ -200,7 +194,9 @@ export interface OverlayOptions {
 
 ```typescript
 export interface ModalEvents {
-  onClose?: () => void; // 모달이 닫힐 때 불리는 콜백 함수입니다.
+  onOpen?(payload: { type; props; id }): void; // 모달이 async하게 불러와 진 다음 열리기 때문에, openModal() 이후 실제로 모달이 마운트 된 순간을 알기 위해 사용합니다.
+  beforeClose?(): PromiseOr<void>; // 모달이 닫히기 전에 불립니다. 모달을 닫지 않으려면, throw Error 를 통해 모달이 닫히지 않도록 막을 수 있습니다. Promise를 반환해 모달이 닫히는 것을 지연시킬 수도 있습니다.
+  onClose?(): void; // 모달이 닫힐 때 불리는 콜백 함수입니다.
 }
 ```
 

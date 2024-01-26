@@ -8,7 +8,7 @@ React modal with context and hooks
 
 ## Concept
 
-This library uses HoC to provide context and container, and provide hooks to open and close modal.
+This library provides container, and hooks to open and close modal.
 Main Concept of this library is providing **type-safe** method to open **any** modals on **anywhere** of your code.
 Second object ismodal code will not be loaded until modal is opened: Reduce bundle size. This is important for faster web.
 
@@ -131,10 +131,7 @@ return (
 );
 // apply to every modal
 return (
-  <ModalProvider
-    register={register}
-    defaultOverlayOptions={{ closeDelay: 300 }}
-  >
+  <ModalProvider register={register} defaultOverlayOptions={{ closeDelay: 300 }}>
     <App />
   </ModalProvider>
 );
@@ -179,7 +176,9 @@ export interface OverlayOptions {
 
 ```typescript
 export interface ModalEvents {
-  onClose?: () => void; // a callback that called on modal closed.
+  onOpen?(payload: { type; props; id }): void; // modal will be loaded asynchrounously. onOpen() is called when modal component is actually mounted.
+  beforeClose?(): PromiseOr<void>; // It called right before modal close. to prevent close modal, throw Error in beforeClose(). If Promise is returned, modal will be opened until Promise is resolved.
+  onClose?(): void; // a callback that is called right after modal is closed.
 }
 ```
 

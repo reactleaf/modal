@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1](https://github.com/react-leaf/modal/tree/1.1.1) (2024-01-26)
+
+- added events callback: `beforeClose()` that can suspend or dismiss modal close.
+
 ## [1.1.0](https://github.com/react-leaf/modal/tree/1.1.0) (2023-08-14)
 
 ### Breaking changes
