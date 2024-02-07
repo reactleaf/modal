@@ -1,16 +1,8 @@
 import { useReducer } from "react";
-import {
-  CloseModalPayload,
-  EnhancedModalPayload,
-  OpenModalPayload,
-  Register,
-} from "./types";
+import { CloseModalPayload, EnhancedModalPayload, OpenModalPayload, Register } from "./types";
 
 export default function useModalReducer<R extends Register>() {
-  function reducer(
-    state: EnhancedModalPayload<R, keyof R>[],
-    action: ModalAction
-  ) {
+  function reducer(state: EnhancedModalPayload<R, keyof R>[], action: ModalAction) {
     switch (action.type) {
       case "@modal/OPEN_MODAL":
         return [...state, action.payload];
@@ -21,10 +13,7 @@ export default function useModalReducer<R extends Register>() {
     }
   }
 
-  const [openedModals, dispatch] = useReducer(
-    reducer,
-    [] as EnhancedModalPayload<R, keyof R>[]
-  );
+  const [openedModals, dispatch] = useReducer(reducer, [] as EnhancedModalPayload<R, keyof R>[]);
 
   function openModal(payload: OpenModalPayload<R, keyof R>) {
     // simple random hex generator
@@ -44,14 +33,14 @@ export default function useModalReducer<R extends Register>() {
   }
 
   /** reducer */
-  type ModalActionCreator =
-    | typeof openModal
-    | typeof closeModal
-    | typeof closeAll;
+  type ModalActionCreator = typeof openModal | typeof closeModal | typeof closeAll;
   type ModalAction = ReturnType<ModalActionCreator>;
 
   const boundedActions = {
     openModal: (payload: OpenModalPayload<R, keyof R>) => {
+      // blur background's focused element
+      (document.activeElement as HTMLElement)?.blur();
+
       const action = openModal(payload);
       dispatch(action);
       return action.payload.id;

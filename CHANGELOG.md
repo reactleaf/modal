@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.5](https://github.com/react-leaf/modal/tree/1.1.5) (2024-02-07)
+
+- blur document's active element right before modal opens.
+
 ## [1.1.4](https://github.com/react-leaf/modal/tree/1.1.4) (2024-01-27)
 
 - added events callback: `beforeClose()` that can suspend or dismiss modal close.
