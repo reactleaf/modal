@@ -53,7 +53,7 @@ function App() {
 
 ### useModal 훅
 
-useModal 훅은 직접 import 할 수 없습니다. createModalHook 을 사용해서 **만들어** 사용해야 합니다.
+`useModal()` 훅은 직접 import 할 수 없습니다. `createModalHook()` 을 사용해서 **만들어** 사용해야 합니다.
 
 register의 타입을 통해 모달의 type과 props가 서로 알맞게 입력되었는지 체크하기 위해서입니다.
 
@@ -65,7 +65,7 @@ import register from "./register";
 export const useModal = createModalHook<typeof register>();
 ```
 
-이렇게 생성된 `openModal` 훅은 당신이 register에 등록한 모달 type을 제대로 지정했는지 체크합니다.
+`useModal()` 에서 제공하는 `openModal()` 함수는 당신이 register에 등록한 모달 type을 제대로 지정했는지 체크합니다.
 
 ```typescript
 import { useModal } from './modals/useModal'
@@ -78,7 +78,7 @@ function openAlert() {
 }
 ```
 
-또한 `openModal` 훅은 적절한 타입에 맞는 적절한 props를 입력했는지 체크할 수 있습니다.
+또한 적절한 타입에 맞는 적절한 props를 입력했는지 체크할 수 있습니다.
 
 ```typescript
 import { useModal } from './modals/useModal'
@@ -100,6 +100,7 @@ function openAlert() {
 `preloadModal`을 사용하면, 레지스터에 등록된 `import()` 구문을 미리 실행해두어, `openModal()` 실행 시 코드를 불러오는데에 걸리는 시간을 없앱니다.
 
 ```typescript
+// [주의] preloadModal은 훅이 아닙니다.
 import { createModalPreloader } from "@reactleaf/modal";
 const preloadModal = createModalPreloader(register);
 
@@ -119,9 +120,7 @@ useEffect(() => {
 `defaultOverlayOptions` 은 아래와 같이 사용합니다.
 
 ```tsx
-type defaultOverlayOptions = {
-  [key in keyof Register]?: Partial<OverlayOptions>;
-} & { default?: Partial<OverlayOptions> };
+type defaultOverlayOptions = Partial<OverlayOptions>;
 
 // 별 설정이 필요 없다면, 기본 값을 사용합니다. 기본값은 아래, openModal과 함께 설명됩니다.
 return (
@@ -129,26 +128,11 @@ return (
     <App />
   </ModalProvider>
 );
-// 모든 모달에 적용할 커스터마이징이 필요하다면, default 키를 사용하세요.
-return (
-  <ModalProvider register={register} defaultOverlayOptions={{ default: { closeDelay: 300 } }}>
-    <App />
-  </ModalProvider>
-);
-// 특정 모달에만 특별한 설정을 하고 싶다면, 이렇게 하면 됩니다.
-return (
-  <ModalProvider register={register} defaultOverlayOptions={{ "@MyAnimatingModal": { closeDelay: 500 } }}>
-    <App />
-  </ModalProvider>
-);
-// 전체 설정과 모달 설정을 함께 사용할 수도 있습니다. 물론, 특정 모달에 대해 설정한 값은 전체 설정보다 우선순위가 높습니다.
+// 모든 모달에 적용할 옵션이 필요하다면 이렇게 작성할 수 있습니다.
 return (
   <ModalProvider
     register={register}
-    defaultOverlayOptions={{
-      default: { closeDelay: 300 },
-      "@MyAnimatingModal": { closeDelay: 500 },
-    }}
+    defaultOverlayOptions={{ closeDelay: 300 }}
   >
     <App />
   </ModalProvider>
@@ -232,7 +216,7 @@ export interface ModalEvents {
   'common/Alert': () => import('./Alert'),
 
 // ./Alert.tsx
-export const defaultOverlayOptions = { 여기 };
+export const defaultOverlayOptions: OverlayOptions;
 
 export default function Alert(props) {
   return ...
@@ -249,7 +233,7 @@ export default function Alert(props) {
 </ModalProvider>
 ```
 
-첫 번째 것이 우선순위가 가장 높고, 마지막에 소개한 방식이 우선순위가 가장 낮습니다.
+첫 번째 것이 우선순위가 가장 높고, 마지막에 소개한 방식이 우선순위가 가장 낮습니다. 세 옵션은 `Object.assign()` 방식으로 합쳐집니다.
 
 ## 모달이 열리고 닫히는 애니메이션을 넣으려면 어떻게 해야 하나요?
 

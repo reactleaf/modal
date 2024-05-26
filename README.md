@@ -55,7 +55,7 @@ function App() {
 
 ### useModal Hook
 
-You cannot import useModal directly. call `createModalHook()` to make the hook.
+You cannot import `useModal()` directly. call `createModalHook()` to make the hook.
 
 It is intended to inject type of register, to check modal type and props are properly provided.
 
@@ -102,6 +102,7 @@ Then, you can preload modals before user click the button that opens modal.
 This calls `import()` from your register, to ensure `openModal()` runs synchronously.
 
 ```typescript
+// [WARN] preloadModal is not a hook.
 import { createModalPreloader } from "@reactleaf/modal";
 const preloadModal = createModalPreloader(register);
 
@@ -129,9 +130,12 @@ return (
     <App />
   </ModalProvider>
 );
-// apply to every modal
+// if you need some settings that applied to every modal, use 'default'
 return (
-  <ModalProvider register={register} defaultOverlayOptions={{ closeDelay: 300 }}>
+  <ModalProvider
+    register={register}
+    defaultOverlayOptions={{ closeDelay: 300 }}
+  >
     <App />
   </ModalProvider>
 );
@@ -202,7 +206,7 @@ There are three points that you could set overlay options.
 
 1. `openModal({ type: "...", overlayOptions: HERE })`
 
-- This options are applied ONLY that modal opens.
+- This options are applied ONLY to the modal opens by the call.
 
 2. When you exports Modal Components
 
@@ -214,7 +218,7 @@ There are three points that you could set overlay options.
   'common/Alert': () => import('./Alert'),
 
 // ./Alert.tsx
-export const defaultOverlayOptions = { HERE };
+export const defaultOverlayOptions: OverlayOptions;
 
 export default function Alert(props) {
   return ...
@@ -231,7 +235,7 @@ export default function Alert(props) {
 </ModalProvider>
 ```
 
-The first one has higher priority, and last one has lower.
+The first one has higher priority, and last one has lower. These options are merged by `Object.assign()` way.
 
 ## How to add opening / closing animation?
 
@@ -277,7 +281,7 @@ But there are some other ways.
 
 `@reactleaf/modal` recieves message, so you can use `window.postMessage()` to open modal. This is useful when you use third-party state control libraries, like redux-saga.
 
-But be careful: `postMessage` is NOT GOOD for type checking, and cannot message functions. If your modal has props like `onConfirm`, `postMessage` cannot handle the props.
+But be careful: `postMessage` is NOT GOOD for type checking, and cannot handle functions on props. If your modal has props like `onConfirm`, `postMessage` cannot handle the props.
 
 postMessage only can receive `openModal` payload. CANNOT CLOSE modals.
 
