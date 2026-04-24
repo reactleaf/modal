@@ -130,6 +130,7 @@ const confirmed = await modal.open(Confirm, {
 
 - `closeSelf(value)` -> `value`
 - `closeSelf()` -> `undefined`
+- 오버레이 클릭 / `Escape` / 브라우저 뒤로가기 -> `undefined`
 - `modal.closeWithResult(id, value)` -> `value`
 - `modal.close(id)` / `modal.closeTop()` / `modal.closeAll()` -> `undefined`
 - `abortController.abort()` -> `null`

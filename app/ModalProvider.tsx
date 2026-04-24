@@ -19,6 +19,15 @@ interface Props {
 
 export function ModalProvider({ manager, defaultOverlayOptions, children }: Props) {
   const [modalStack, setModalStack] = useState<ModalState[]>([]);
+  const shouldPreventScroll = modalStack.some((modal) => {
+    const finalOptions = {
+      ...DEFAULT_OVERLAY_OPTIONS,
+      ...defaultOverlayOptions,
+      ...modal.options,
+    };
+
+    return finalOptions.preventScroll;
+  });
 
   useEffect(() => manager.subscribe(setModalStack), [manager]);
 
@@ -35,11 +44,7 @@ export function ModalProvider({ manager, defaultOverlayOptions, children }: Prop
 
   useEffect(() => {
     const handlePopState = () => {
-      const closed = manager.closeTop({ historyBack: true });
-
-      if (closed) {
-        window.history.pushState(null, '', window.location.href);
-      }
+      manager.handlePopState();
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -48,6 +53,17 @@ export function ModalProvider({ manager, defaultOverlayOptions, children }: Prop
       window.removeEventListener('popstate', handlePopState);
     };
   }, [manager]);
+
+  useEffect(() => {
+    if (!shouldPreventScroll) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [shouldPreventScroll]);
 
   return (
     <>
@@ -113,18 +129,9 @@ function ModalOverlay({ manager, modal, overlayOptions }: OverlayProps) {
   function handleOverlayClick(e: React.MouseEvent) {
     if (!finalOptions.closeOnOverlayClick) return;
     if (e.target === e.currentTarget) {
-      closeSelf(null);
+      void closeSelf();
     }
   }
-
-  useEffect(() => {
-    if (finalOptions.preventScroll) {
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = 'initial';
-      };
-    }
-  }, [finalOptions.preventScroll]);
 
   return (
     <div

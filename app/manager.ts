@@ -3,6 +3,7 @@ import React from 'react';
 import { CloseOptions, ModalComponent, ModalListener, ModalOptions, ModalState, PropsAreOptional } from './types';
 
 type ModalEntry = ModalState & {
+  disposeAbortListener?: () => void;
   close: (value?: unknown, options?: CloseOptions) => void;
 };
 
@@ -10,6 +11,7 @@ export default class ModalManager {
   private modalStack: ModalEntry[] = [];
   private listeners: ModalListener[] = [];
   private idCounter = 0;
+  private pendingProgrammaticPopStates = 0;
 
   constructor() {}
 
@@ -42,20 +44,28 @@ export default class ModalManager {
     return new Promise<Result | null | undefined>((resolve) => {
       const id = this.generateId();
       const finalOptions = { ...Component?.modalOptions, ...options };
+      let disposeAbortListener: (() => void) | undefined;
+
+      if (finalOptions.abortController?.signal.aborted) {
+        resolve(null);
+        return;
+      }
+
       const closeModal = (result?: Result, closeOptions?: CloseOptions) => {
         this.removeById(id, closeOptions);
         resolve(result);
       };
 
       if (finalOptions.abortController) {
-        finalOptions.abortController.signal.addEventListener(
-          'abort',
-          () => {
-            this.removeById(id);
-            resolve(null);
-          },
-          { once: true },
-        );
+        const handleAbort = () => {
+          this.removeById(id);
+          resolve(null);
+        };
+
+        finalOptions.abortController.signal.addEventListener('abort', handleAbort, { once: true });
+        disposeAbortListener = () => {
+          finalOptions.abortController?.signal.removeEventListener('abort', handleAbort);
+        };
       }
 
       const modalState = {
@@ -63,6 +73,7 @@ export default class ModalManager {
         Component: Component as React.ComponentType<Record<string, unknown>>,
         props,
         options: finalOptions,
+        disposeAbortListener,
         close: closeModal,
       };
 
@@ -80,14 +91,25 @@ export default class ModalManager {
     const modalIndex = this.modalStack.findIndex((modal) => modal.id === id);
     if (modalIndex === -1) return false;
 
-    this.modalStack.splice(modalIndex, 1);
+    const [removedModal] = this.modalStack.splice(modalIndex, 1);
+    removedModal?.disposeAbortListener?.();
 
     if (!options?.historyBack && typeof window !== 'undefined') {
+      this.pendingProgrammaticPopStates += 1;
       window.history.back();
     }
 
     this.notifyListeners();
     return true;
+  }
+
+  handlePopState(): boolean {
+    if (this.pendingProgrammaticPopStates > 0) {
+      this.pendingProgrammaticPopStates -= 1;
+      return false;
+    }
+
+    return this.closeTop({ historyBack: true });
   }
 
   closeWithResult<Result = unknown>(id: string, result?: Result, options?: CloseOptions): boolean {

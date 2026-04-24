@@ -150,6 +150,36 @@ test('closeWithResult triggers history back when closing a modal', () => {
   expect(back).toHaveBeenCalledTimes(1);
 });
 
+test('programmatic close does not let the next popstate close another modal', async () => {
+  const manager = new ModalManager();
+  const p1 = manager.open(Required, { message: 'a' });
+  const p2 = manager.open(Required, { message: 'b' });
+
+  const topId = manager.getSnapshot()[1]!.id;
+  expect(manager.closeWithResult(topId, 'done')).toBe(true);
+  await expect(p2).resolves.toBe('done');
+  expect(manager.getSnapshot()).toHaveLength(1);
+
+  expect(manager.handlePopState()).toBe(false);
+  expect(manager.getSnapshot()).toHaveLength(1);
+
+  manager.close(manager.getSnapshot()[0]!.id, { historyBack: true });
+  await expect(p1).resolves.toBeUndefined();
+});
+
+test('manual popstate closes only the top modal', async () => {
+  const manager = new ModalManager();
+  const p1 = manager.open(Required, { message: 'a' });
+  const p2 = manager.open(Required, { message: 'b' });
+
+  expect(manager.handlePopState()).toBe(true);
+  await expect(p2).resolves.toBeUndefined();
+  expect(manager.getSnapshot()).toHaveLength(1);
+
+  manager.close(manager.getSnapshot()[0]!.id, { historyBack: true });
+  await expect(p1).resolves.toBeUndefined();
+});
+
 test('closeWithResult is a no-op for unknown id', () => {
   const manager = new ModalManager();
   void manager.open(Empty);
@@ -238,5 +268,29 @@ test('abort on AbortController resolves open with null and clears stack', async 
 
   abortController.abort();
   await expect(p).resolves.toBeNull();
+  expect(manager.getSnapshot()).toHaveLength(0);
+});
+
+test('normal close removes abort listener before the signal aborts', async () => {
+  const manager = new ModalManager();
+  const abortController = new AbortController();
+  const removeSpy = jest.spyOn(abortController.signal, 'removeEventListener');
+  const p = manager.open(Empty, null, { abortController });
+  const id = manager.getSnapshot()[0]!.id;
+
+  expect(manager.close(id)).toBe(true);
+  await expect(p).resolves.toBeUndefined();
+  expect(removeSpy).toHaveBeenCalledWith('abort', expect.any(Function));
+
+  abortController.abort();
+  expect(manager.getSnapshot()).toHaveLength(0);
+});
+
+test('already-aborted signal resolves without opening a modal', async () => {
+  const manager = new ModalManager();
+  const abortController = new AbortController();
+  abortController.abort();
+
+  await expect(manager.open(Empty, null, { abortController })).resolves.toBeNull();
   expect(manager.getSnapshot()).toHaveLength(0);
 });

@@ -130,6 +130,7 @@ Return value rules:
 
 - `closeSelf(value)` -> resolves to `value`
 - `closeSelf()` -> resolves to `undefined`
+- overlay click / `Escape` / browser back -> resolves to `undefined`
 - `modal.closeWithResult(id, value)` -> resolves to `value`
 - `modal.close(id)` / `modal.closeTop()` / `modal.closeAll()` -> resolves to `undefined`
 - `abortController.abort()` -> resolves to `null`
