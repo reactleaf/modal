@@ -35,7 +35,7 @@ export function ModalProvider({ manager, defaultOverlayOptions, children }: Prop
 
   useEffect(() => {
     const handlePopState = () => {
-      const closed = manager.closeTop(true);
+      const closed = manager.closeTop({ historyBack: true });
 
       if (closed) {
         window.history.pushState(null, '', window.location.href);
@@ -56,7 +56,12 @@ export function ModalProvider({ manager, defaultOverlayOptions, children }: Prop
       {/* 통합된 Modal Container */}
       <div id='modal-root' data-class='reactleaf'>
         {modalStack.map((modal) => (
-          <ModalOverlay key={modal.id} modal={modal} overlayOptions={defaultOverlayOptions} />
+          <ModalOverlay
+            key={modal.id}
+            manager={manager}
+            modal={modal}
+            overlayOptions={defaultOverlayOptions}
+          />
         ))}
       </div>
     </>
@@ -65,11 +70,12 @@ export function ModalProvider({ manager, defaultOverlayOptions, children }: Prop
 
 // 모달 오버레이 컴포넌트
 interface OverlayProps {
+  manager: ModalManager;
   modal: ModalState;
   overlayOptions: OverlayOptions | undefined;
 }
 
-function ModalOverlay({ modal, overlayOptions }: OverlayProps) {
+function ModalOverlay({ manager, modal, overlayOptions }: OverlayProps) {
   const [visible, setVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -94,13 +100,13 @@ function ModalOverlay({ modal, overlayOptions }: OverlayProps) {
 
       return new Promise((resolve) => {
         setTimeout(() => {
-          modal.close(result);
+          manager.closeWithResult(modal.id, result);
           resolve();
         }, delay);
       });
     }
 
-    modal.close(result);
+    manager.closeWithResult(modal.id, result);
     return Promise.resolve();
   }
 

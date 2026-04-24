@@ -130,6 +130,8 @@ const confirmed = await modal.open(Confirm, {
 
 - `closeSelf(value)` -> `value`
 - `closeSelf()` -> `undefined`
+- `modal.closeWithResult(id, value)` -> `value`
+- `modal.close(id)` / `modal.closeTop()` / `modal.closeAll()` -> `undefined`
 - `abortController.abort()` -> `null`
 
 props 전달 규칙:
@@ -143,9 +145,35 @@ await modal.open(EmptyPropsModal);
 await modal.open(EmptyPropsModal, null, { abortController: controller });
 ```
 
-### `modal.closeAll()`
+### `modal.closeWithResult(id, result, options?)`
 
-현재 열려 있는 모든 모달을 닫습니다.
+지정한 id의 모달을 닫고, 해당 `open()` Promise를 `result`로 resolve합니다.
+
+```ts
+modal.closeWithResult(id, { confirmed: true });
+modal.closeWithResult(id, { confirmed: true }, { historyBack: true });
+```
+
+### `modal.close(id, options?)`
+
+지정한 id의 모달을 닫고, 해당 `open()` Promise를 `undefined`로 resolve합니다.
+
+```ts
+modal.close(id);
+```
+
+### `modal.closeTop(options?)`
+
+가장 위의 모달을 닫고, 해당 `open()` Promise를 `undefined`로 resolve합니다.
+
+```ts
+modal.closeTop();
+modal.closeTop({ historyBack: true });
+```
+
+### `modal.closeAll(options?)`
+
+현재 열려 있는 모든 모달을 닫고, 각 `open()` Promise를 `undefined`로 resolve합니다.
 
 ```ts
 modal.closeAll();

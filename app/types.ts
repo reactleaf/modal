@@ -14,13 +14,16 @@ export interface ModalOptions extends OverlayOptions {
   abortController?: AbortController;
 }
 
-// 모달 상태
-export interface ModalState<TComponent extends React.ComponentType = React.ComponentType, Result = unknown> {
+export interface CloseOptions {
+  historyBack?: boolean;
+}
+
+// getSnapshot() / subscribe()로 노출되는 모달 엔트리(내부 close 핸들러는 포함하지 않음)
+export interface ModalState<TComponent extends React.ComponentType = React.ComponentType> {
   id: string;
   Component: TComponent;
   props?: React.ComponentProps<TComponent>;
   options: ModalOptions;
-  close: (value: Result) => void;
 }
 
 export type Equals<X, Y> = (() => Y extends X ? 1 : 2) extends () => X extends Y ? 1 : 2 ? true : false;

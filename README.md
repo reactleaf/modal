@@ -130,6 +130,8 @@ Return value rules:
 
 - `closeSelf(value)` -> resolves to `value`
 - `closeSelf()` -> resolves to `undefined`
+- `modal.closeWithResult(id, value)` -> resolves to `value`
+- `modal.close(id)` / `modal.closeTop()` / `modal.closeAll()` -> resolves to `undefined`
 - `abortController.abort()` -> resolves to `null`
 
 Props rules:
@@ -143,9 +145,35 @@ await modal.open(EmptyPropsModal);
 await modal.open(EmptyPropsModal, null, { abortController: controller });
 ```
 
-### `modal.closeAll()`
+### `modal.closeWithResult(id, result, options?)`
 
-Closes all currently open modals.
+Closes the modal with the given id and resolves its pending `open()` promise with `result`.
+
+```ts
+modal.closeWithResult(id, { confirmed: true });
+modal.closeWithResult(id, { confirmed: true }, { historyBack: true });
+```
+
+### `modal.close(id, options?)`
+
+Closes the modal with the given id and resolves its pending `open()` promise with `undefined`.
+
+```ts
+modal.close(id);
+```
+
+### `modal.closeTop(options?)`
+
+Closes the top-most modal and resolves its pending `open()` promise with `undefined`.
+
+```ts
+modal.closeTop();
+modal.closeTop({ historyBack: true });
+```
+
+### `modal.closeAll(options?)`
+
+Closes all currently open modals and resolves their pending `open()` promises with `undefined`.
 
 ```ts
 modal.closeAll();
