@@ -23,6 +23,10 @@ The new context-based modal state removes the old prop injection approach that i
 - String modal names are removed
 - `BasicModalProps` is removed
 
+Why remove string modal names?
+
+In v1, modals were looked up by name, so the actual modal component was often not imported at the SSR render boundary. That caused problems for styling systems that rely on import-based className analysis, such as Tailwind, because the modal component source might not be visible during analysis. v2 switches to direct component usage so the modal component is imported explicitly and those class names can be analyzed correctly.
+
 ## Installation
 
 ```bash
