@@ -1,8 +1,33 @@
+# Tooling & repo
 .babelrc
 .eslintrc.js
 .log
 webpack.*
-src
-examples
-
 yarn.lock
+pnpm-lock.yaml
+pnpm-workspace.yaml
+jest.config.cjs
+tsconfig.json
+tsconfig.jest.json
+.github/
+.vscode/
+
+# Source & site (published JS lives under dist/app only; leading / = package root only)
+/app/
+/docs/
+/examples/
+/src/
+
+# Dev-only markdown
+context.md
+
+# Tests (source + emitted)
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.test.d.ts
+
+# Stray tsc output (root dist/*.js is duplicate of dist/app; dist/docs is accidental)
+dist/docs/
+dist/*.js
+dist/*.d.ts

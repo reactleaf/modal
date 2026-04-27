@@ -1,5 +1,5 @@
-import ModalManager from './manager';
-import type { ModalComponent, ModalOptions } from './types';
+import ModalManager, { MODAL_ABORTED } from './manager';
+import type { LayerOptions, ModalComponent } from './types';
 
 function installWindowMock() {
   const historyBack = jest.fn();
@@ -22,11 +22,11 @@ function removeWindowMock() {
 const Empty: ModalComponent<Record<string, never>> = (() => null) as unknown as ModalComponent<Record<string, never>>;
 const Required: ModalComponent<{ message: string }> = (() => null) as unknown as ModalComponent<{ message: string }>;
 
-function componentWithModalOptions(
-  options: Partial<ModalOptions>,
+function componentWithLayerOptions(
+  options: Partial<LayerOptions>,
 ): ModalComponent<Record<string, never>> {
   return Object.assign((() => null) as unknown as ModalComponent<Record<string, never>>, {
-    modalOptions: options,
+    layerOptions: options,
   });
 }
 
@@ -333,8 +333,8 @@ test('unsubscribe stops further notifications', () => {
   expect(listener).toHaveBeenCalledTimes(1);
 });
 
-test('open merges Component.modalOptions with call options (later wins)', () => {
-  const layerClickDisabled = componentWithModalOptions({ closeOnOutsideClick: false });
+test('open merges Component.layerOptions with call options (later wins)', () => {
+  const layerClickDisabled = componentWithLayerOptions({ closeOnOutsideClick: false });
   const manager = new ModalManager();
   void manager.open(layerClickDisabled, null, { closeOnOutsideClick: true });
 
@@ -346,13 +346,13 @@ test('open merges Component.modalOptions with call options (later wins)', () => 
   );
 });
 
-test('abort on AbortController resolves open with null and clears stack', async () => {
+test('abort on AbortController resolves open with MODAL_ABORTED and clears stack', async () => {
   const manager = new ModalManager();
   const abortController = new AbortController();
   const p = manager.open(Empty, null, { abortController });
 
   abortController.abort();
-  await expect(p).resolves.toBeNull();
+  await expect(p).resolves.toBe(MODAL_ABORTED);
   expect(manager.getSnapshot()).toHaveLength(0);
 });
 
@@ -368,14 +368,14 @@ test('abort on AbortController delegates through close request listener when ins
 
   expect(listener).toHaveBeenCalledWith({
     id,
-    result: null,
+    result: MODAL_ABORTED,
     options: undefined,
     historySettled: expect.any(Promise),
   });
   expect(manager.getSnapshot()).toHaveLength(1);
 
-  expect(manager.completeCloseWithResult(id, null)).toBe(true);
-  await expect(p).resolves.toBeNull();
+  expect(manager.completeCloseWithResult(id, MODAL_ABORTED)).toBe(true);
+  await expect(p).resolves.toBe(MODAL_ABORTED);
   unsetListener();
 });
 
@@ -399,6 +399,6 @@ test('already-aborted signal resolves without opening a modal', async () => {
   const abortController = new AbortController();
   abortController.abort();
 
-  await expect(manager.open(Empty, null, { abortController })).resolves.toBeNull();
+  await expect(manager.open(Empty, null, { abortController })).resolves.toBe(MODAL_ABORTED);
   expect(manager.getSnapshot()).toHaveLength(0);
 });

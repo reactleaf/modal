@@ -4,10 +4,10 @@ export interface LayerOptions {
   className?: string;
   closeDelay?: number;
   closeOnOutsideClick?: boolean;
+  dim?: boolean | string;
 }
 
 export interface StackOptions {
-  shade?: boolean;
   preventScroll?: boolean;
 }
 
@@ -46,7 +46,7 @@ export type PropsAreOptional<Props> =
 
 // 모달 컴포넌트 타입 정의
 export type ModalComponent<TProps = unknown> = React.ComponentType<TProps> & {
-  modalOptions?: Partial<ModalOptions>;
+  layerOptions?: Partial<LayerOptions>;
 };
 
 // 모달 매니저 이벤트 리스너 타입

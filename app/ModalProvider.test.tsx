@@ -91,45 +91,60 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test("shade: true renders modal-shade", async () => {
+test("default dim adds dim class to modal layer", async () => {
   mockHistoryChain();
   const manager = new ModalManager();
 
   render(
-    <ModalProvider manager={manager} stackOptions={{ shade: true }}>
+    <ModalProvider manager={manager}>
       <span>app</span>
     </ModalProvider>,
   );
 
-  expect(document.querySelector(".modal-shade")).toBeTruthy();
+  expect(document.querySelector(".modal-layer")).toBeNull();
 
   await act(async () => {
     void manager.open(TestModal);
   });
 
-  expect(document.querySelector(".modal-shade")).toBeTruthy();
+  expect(document.querySelector(".modal-layer")?.classList.contains("dim")).toBe(true);
 });
 
-test("shade: false does not render modal-shade", async () => {
+test("dim: false does not add dim class to modal layer", async () => {
   mockHistoryChain();
   const manager = new ModalManager();
 
   render(
-    <ModalProvider manager={manager} stackOptions={{ shade: false }}>
+    <ModalProvider manager={manager} defaultLayerOptions={{ dim: false }}>
       <span>app</span>
     </ModalProvider>,
   );
-
-  expect(document.querySelector(".modal-shade")).toBeNull();
 
   await act(async () => {
     void manager.open(TestModal);
   });
 
-  expect(document.querySelector(".modal-shade")).toBeNull();
+  expect(document.querySelector(".modal-layer")?.classList.contains("dim")).toBe(false);
 });
 
-test("modal-shade loses visible class when stack becomes empty", async () => {
+test("dim string adds custom dim class to modal layer", async () => {
+  mockHistoryChain();
+  const manager = new ModalManager();
+
+  render(
+    <ModalProvider manager={manager} defaultLayerOptions={{ dim: "custom-dim" }}>
+      <span>app</span>
+    </ModalProvider>,
+  );
+
+  await act(async () => {
+    void manager.open(TestModal);
+  });
+
+  expect(document.querySelector(".modal-layer")?.classList.contains("custom-dim")).toBe(true);
+});
+
+test("modal layer is removed when stack becomes empty", async () => {
   mockHistoryChain();
   const manager = new ModalManager();
 
@@ -140,9 +155,7 @@ test("modal-shade loses visible class when stack becomes empty", async () => {
   );
 
   const p = actOpenTestModal(manager);
-  await waitFor(() => {
-    expect(document.querySelector(".modal-shade")?.classList.contains("visible")).toBe(true);
-  });
+  await waitFor(() => expect(document.querySelector(".modal-layer")).toBeTruthy());
 
   const id = manager.getSnapshot()[0]!.id;
   await act(async () => {
@@ -150,7 +163,7 @@ test("modal-shade loses visible class when stack becomes empty", async () => {
   });
   await flushClosePipeline(manager);
 
-  expect(document.querySelector(".modal-shade")?.classList.contains("visible")).toBe(false);
+  expect(document.querySelector(".modal-layer")).toBeNull();
   await expect(p).resolves.toBeNull();
 });
 
@@ -228,21 +241,20 @@ test("unmounting ModalProvider restores body overflow when preventScroll was act
   expect(document.body.style.overflow).toBe("clip");
 });
 
-test("shade: false keeps manager stack and modal layers in sync through open and close", async () => {
+test("dim: false keeps manager stack and modal layers in sync through open and close", async () => {
   mockHistoryChain();
   const manager = new ModalManager();
 
   render(
-    <ModalProvider manager={manager} stackOptions={{ shade: false }}>
+    <ModalProvider manager={manager} defaultLayerOptions={{ dim: false }}>
       <span>app</span>
     </ModalProvider>,
   );
 
-  expect(document.querySelector(".modal-shade")).toBeNull();
-
   const p = actOpenTestModal(manager);
   await waitFor(() => expect(manager.getSnapshot()).toHaveLength(1));
   expect(document.querySelectorAll(".modal-layer")).toHaveLength(1);
+  expect(document.querySelector(".modal-layer")?.classList.contains("dim")).toBe(false);
 
   const id = manager.getSnapshot()[0]!.id;
   await act(async () => {
@@ -266,7 +278,7 @@ test("closeOnOutsideClick: true closes when clicking the modal layer backdrop", 
   );
 
   const p = actOpenTestModal(manager);
-  const layer = await waitFor(() => document.querySelector(".modal-layer.is-top"));
+  const layer = await waitFor(() => document.querySelector('.modal-layer[data-top="true"]'));
   expect(layer).toBeTruthy();
   if (!layer) throw new Error("layer");
 
@@ -289,7 +301,7 @@ test("closeOnOutsideClick: false does not close on layer click", async () => {
   );
 
   const p = actOpenTestModal(manager);
-  const layer = await waitFor(() => document.querySelector(".modal-layer.is-top"));
+  const layer = await waitFor(() => document.querySelector('.modal-layer[data-top="true"]'));
   expect(layer).toBeTruthy();
   if (!layer) throw new Error("layer");
 
@@ -371,7 +383,7 @@ test("closeDelay > 0: layer loses visible before stack clears; stack clears afte
     void manager.open(TestModal);
   });
 
-  const layer = document.querySelector(".modal-layer.is-top");
+  const layer = document.querySelector('.modal-layer[data-top="true"]');
   expect(layer).toBeTruthy();
   expect(layer?.classList.contains("visible")).toBe(true);
 
@@ -416,7 +428,7 @@ test("closeDelay > 0: visible off then delayed close; prepareClose reaches manag
   );
 
   const p = actOpenTestModal(manager);
-  const layer = document.querySelector(".modal-layer.is-top");
+  const layer = document.querySelector('.modal-layer[data-top="true"]');
   expect(layer).toBeTruthy();
   expect(layer?.classList.contains("visible")).toBe(true);
 
@@ -458,7 +470,7 @@ test("closeDelay 0 closes without extra delay", async () => {
   );
 
   const p = actOpenTestModal(manager);
-  await waitFor(() => expect(document.querySelector(".modal-layer.is-top")).toBeTruthy());
+  await waitFor(() => expect(document.querySelector('.modal-layer[data-top="true"]')).toBeTruthy());
 
   const id = manager.getSnapshot()[0]!.id;
   await act(async () => {

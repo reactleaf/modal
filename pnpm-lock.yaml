@@ -49,8 +49,8 @@ importers:
   docs:
     dependencies:
       '@reactleaf/modal':
-        specifier: workspace:*
-        version: link:..
+        specifier: 2.0.0-alpha.0
+        version: 2.0.0-alpha.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
@@ -505,6 +505,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@reactleaf/modal@2.0.0-alpha.0':
+    resolution: {integrity: sha512-a2Ch27+3lIFEm6FWvd6xMc1pWoLWoHx7DZA5uW5EN/LI0KCmphNjdaZ6EUamiPcrCpOUzXx5010Q6HyGTHrUcg==}
+    peerDependencies:
+      react: ^16 || ^17 || ^18 || ^19
+      react-dom: ^16 || ^17 || ^18 || ^19
 
   '@rolldown/pluginutils@1.0.0-rc.3':
     resolution: {integrity: sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==}
@@ -2681,6 +2687,12 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@reactleaf/modal@2.0.0-alpha.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      classnames: 2.5.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 

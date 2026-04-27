@@ -186,7 +186,7 @@ function Alert({ message, closeSelf }) {
   // ... 
 }
 
-Alert.modalOptions = {
+Alert.layerOptions = {
   closeOnOverlayClick: false,
   dim: false
 };

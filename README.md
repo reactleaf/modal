@@ -144,7 +144,7 @@ Return value rules:
 - overlay click / `Escape` / browser back -> resolves to `undefined`
 - `modal.closeWithResult(id, value)` -> resolves to `value`
 - `modal.close(id)` / `modal.closeTop()` / `modal.closeAll()` -> resolves to `undefined`
-- `abortController.abort()` -> resolves to `null`
+- `abortController.abort()` -> resolves to `MODAL_ABORTED`
 
 Props rules:
 
@@ -274,7 +274,7 @@ Options are merged in this order:
   <App />
 </ModalProvider>
 
-Alert.modalOptions = {
+Alert.layerOptions = {
   closeOnOutsideClick: false,
 };
 
@@ -294,7 +294,7 @@ const Alert: ModalComponent<AlertProps> = ({ message }) => {
   // ...
 };
 
-Alert.modalOptions = {
+Alert.layerOptions = {
   closeOnOutsideClick: false,
 };
 ```
@@ -316,6 +316,8 @@ if (confirmed) {
 ### AbortController support
 
 ```tsx
+import { MODAL_ABORTED } from '@reactleaf/modal';
+
 const controller = new AbortController();
 
 setTimeout(() => controller.abort(), 5000);
@@ -326,7 +328,7 @@ const result = await modal.open(
   { abortController: controller },
 );
 
-if (result === null) {
+if (result === MODAL_ABORTED) {
   console.log('Modal was aborted');
 }
 ```

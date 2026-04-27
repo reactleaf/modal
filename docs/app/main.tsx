@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ModalManager, ModalProvider } from '@reactleaf/modal';
+import { MODAL_ABORTED, ModalManager, ModalProvider } from '@reactleaf/modal';
 import { Alert, Confirm, Prompt, PromptProps } from './example-modals';
 import '../../style.css';
 import './styles.css';
@@ -67,11 +67,11 @@ function App() {
     );
 
     window.clearTimeout(timer);
-    setLastResult(`Abort result: ${String(result)}`);
+    setLastResult(`Abort result: ${result === MODAL_ABORTED ? 'aborted' : String(result)}`);
   }
 
   async function handlePrompt() {
-    const result = await modal.open<PromptProps, string>(Prompt, {
+    const result = await modal.open<PromptProps, string | null>(Prompt, {
       title: 'What should we call this item?',
       placeholder: 'Item name',
     });
@@ -82,8 +82,8 @@ function App() {
   return (
     <ModalProvider
       manager={modal}
-      defaultLayerOptions={{ closeDelay: 180, closeOnOutsideClick: true }}
-      stackOptions={{ shade: true, preventScroll: true }}
+      defaultLayerOptions={{ closeDelay: 180, closeOnOutsideClick: true, dim: true }}
+      stackOptions={{ preventScroll: true }}
     >
       <header className="site-header">
         <nav className="nav" aria-label="Primary">

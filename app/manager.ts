@@ -21,6 +21,8 @@ type PendingProgrammaticBack = {
 };
 
 const HISTORY_STATE_KEY = '__reactleafModal';
+export const MODAL_ABORTED: unique symbol = Symbol.for('@reactleaf/modal/aborted');
+export type ModalAborted = typeof MODAL_ABORTED;
 
 function createModalHistoryState(id: string) {
   return {
@@ -63,26 +65,26 @@ export default class ModalManager {
     Component: PropsAreOptional<Props> extends true ? ModalComponent<Props> : never,
     props?: Props | null,
     options?: ModalOptions,
-  ): Promise<Result | null | undefined>;
+  ): Promise<Result | ModalAborted | undefined>;
 
   open<Props, Result = unknown>(
     Component: PropsAreOptional<Props> extends true ? never : ModalComponent<Props>,
     props: Props,
     options?: ModalOptions,
-  ): Promise<Result | null | undefined>;
+  ): Promise<Result | ModalAborted | undefined>;
 
   open<Props, Result = unknown>(
     Component: ModalComponent<Props>,
     props?: Props | null,
     options?: ModalOptions,
-  ): Promise<Result | null | undefined> {
-    return new Promise<Result | null | undefined>((resolve) => {
+  ): Promise<Result | ModalAborted | undefined> {
+    return new Promise<Result | ModalAborted | undefined>((resolve) => {
       const id = this.generateId();
-      const finalOptions = { ...Component?.modalOptions, ...options };
+      const finalOptions = { ...Component?.layerOptions, ...options };
       let disposeAbortListener: (() => void) | undefined;
 
       if (finalOptions.abortController?.signal.aborted) {
-        resolve(null);
+        resolve(MODAL_ABORTED);
         return;
       }
 
@@ -96,7 +98,7 @@ export default class ModalManager {
 
       if (finalOptions.abortController) {
         const handleAbort = () => {
-          this.closeWithResult(id, null);
+          this.closeWithResult(id, MODAL_ABORTED);
         };
 
         finalOptions.abortController.signal.addEventListener('abort', handleAbort, { once: true });

@@ -23,7 +23,7 @@ export const Alert: ModalComponent<AlertProps> = ({ message, confirmText = 'OK' 
   );
 };
 
-Alert.modalOptions = {
+Alert.layerOptions = {
   closeOnOutsideClick: false,
 };
 
@@ -57,7 +57,7 @@ export const Confirm: ModalComponent<ConfirmProps> = ({
   );
 };
 
-Confirm.modalOptions = {
+Confirm.layerOptions = {
   closeOnOutsideClick: false,
 };
 

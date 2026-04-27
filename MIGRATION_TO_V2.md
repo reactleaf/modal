@@ -133,7 +133,7 @@ const Alert = ({ message }: AlertProps) => {
   );
 };
 
-Alert.modalOptions = {
+Alert.layerOptions = {
   closeOnOutsideClick: false,
 };
 
@@ -187,6 +187,8 @@ if (confirmed) {
 #### AbortController
 
 ```tsx
+import { MODAL_ABORTED } from '@reactleaf/modal';
+
 const controller = new AbortController();
 
 setTimeout(() => controller.abort(), 5000);
@@ -197,7 +199,7 @@ const result = await modal.open(
   { abortController: controller },
 );
 
-if (result === null) {
+if (result === MODAL_ABORTED) {
   console.log('Modal was aborted');
 }
 ```
@@ -228,7 +230,7 @@ Options are merged in this order:
   <App />
 </ModalProvider>
 
-Alert.modalOptions = { closeOnOutsideClick: false };
+Alert.layerOptions = { closeOnOutsideClick: false };
 
 await modal.open(Alert, { message: 'Hello' }, { className: 'alert-layer' });
 ```

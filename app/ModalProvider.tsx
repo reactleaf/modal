@@ -7,10 +7,10 @@ import { CloseRequest, LayerOptions, ModalState, StackOptions } from "./types";
 
 const DEFAULT_LAYER_OPTIONS: LayerOptions = {
   closeDelay: 0,
+  dim: true,
 };
 
 const DEFAULT_STACK_OPTIONS: Required<StackOptions> = {
-  shade: true,
   preventScroll: true,
 };
 
@@ -27,7 +27,6 @@ export function ModalProvider({ manager, defaultLayerOptions, stackOptions, chil
   const finalStackOptions = getFinalStackOptions(stackOptions);
   const shouldPreventScroll = modalStack.length > 0 && finalStackOptions.preventScroll;
   const topModal = modalStack[modalStack.length - 1];
-  const shadeVisible = modalStack.length > 0;
 
   useEffect(() => manager.subscribe(setModalStack), [manager]);
 
@@ -82,7 +81,6 @@ export function ModalProvider({ manager, defaultLayerOptions, stackOptions, chil
 
       {/* 통합된 Modal Container */}
       <div id="modal-root" data-class="reactleaf">
-        {finalStackOptions.shade && <div className={cx("modal-shade", { visible: shadeVisible })} data-class="reactleaf" />}
         {modalStack.map((modal, index) => (
           <ModalLayer
             key={modal.id}
@@ -118,6 +116,12 @@ function getFinalLayerOptions(modal: ModalState, layerOptions: Partial<LayerOpti
     ...layerOptions,
     ...modal.options,
   };
+}
+
+function getDimClassName(dim: LayerOptions["dim"]): string | undefined {
+  if (dim === true) return "dim";
+  if (typeof dim === "string") return dim;
+  return undefined;
 }
 
 // 모달 레이어 컴포넌트
@@ -198,11 +202,11 @@ function ModalLayer({
 
   return (
     <div
-      className={cx("modal-layer", finalOptions.className, {
-        "is-top": isTop,
+      className={cx("modal-layer", getDimClassName(finalOptions.dim), finalOptions.className, {
         visible,
       })}
       data-class="reactleaf"
+      data-top={isTop ? "true" : undefined}
       onClick={handleLayerClick}
       style={{ zIndex: 1001 + stackIndex }}
     >
