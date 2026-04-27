@@ -1,22 +1,33 @@
 import React from 'react';
 
-// 오버레이 옵션
-export interface OverlayOptions {
+export interface LayerOptions {
   className?: string;
   closeDelay?: number;
-  closeOnOverlayClick?: boolean;
-  dim?: boolean;
+  closeOnOutsideClick?: boolean;
+}
+
+export interface StackOptions {
+  shade?: boolean;
   preventScroll?: boolean;
 }
 
 // 모달 옵션 (AbortController 포함)
-export interface ModalOptions extends OverlayOptions {
+export interface ModalOptions extends LayerOptions {
   abortController?: AbortController;
 }
 
 export interface CloseOptions {
   historyBack?: boolean;
 }
+
+export interface CloseRequest {
+  id: string;
+  result?: unknown;
+  options?: CloseOptions;
+  historySettled: Promise<void>;
+}
+
+export type CloseRequestListener = (request: CloseRequest) => boolean;
 
 // getSnapshot() / subscribe()로 노출되는 모달 엔트리(내부 close 핸들러는 포함하지 않음)
 export interface ModalState<TComponent extends React.ComponentType = React.ComponentType> {

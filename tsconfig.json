@@ -9,5 +9,6 @@
     "esModuleInterop": true,
     "lib": ["DOM", "ES2017"]
   },
-  "exclude": ["node_modules", "dist", "examples", "index.*"]
+  "include": ["app/**/*.ts", "app/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "examples", "docs", "index.*", "app/**/*.test.ts"]
 }

@@ -138,6 +138,16 @@ test('open pushes history state once per modal', () => {
   void manager.open(Empty);
   void manager.open(Empty);
   expect(pushState).toHaveBeenCalledTimes(2);
+  expect(pushState.mock.calls[0]![0]).toEqual({
+    __reactleafModal: {
+      id: manager.getSnapshot()[0]!.id,
+    },
+  });
+  expect(pushState.mock.calls[1]![0]).toEqual({
+    __reactleafModal: {
+      id: manager.getSnapshot()[1]!.id,
+    },
+  });
 });
 
 test('closeWithResult triggers history back when closing a modal', () => {
@@ -151,16 +161,31 @@ test('closeWithResult triggers history back when closing a modal', () => {
 });
 
 test('programmatic close does not let the next popstate close another modal', async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).window.addEventListener = jest.fn();
   const manager = new ModalManager();
   const p1 = manager.open(Required, { message: 'a' });
   const p2 = manager.open(Required, { message: 'b' });
 
   const topId = manager.getSnapshot()[1]!.id;
   expect(manager.closeWithResult(topId, 'done')).toBe(true);
-  await expect(p2).resolves.toBe('done');
   expect(manager.getSnapshot()).toHaveLength(1);
 
-  expect(manager.handlePopState()).toBe(false);
+  let p2Settled = false;
+  void p2.then(() => {
+    p2Settled = true;
+  });
+  await Promise.resolve();
+  expect(p2Settled).toBe(false);
+
+  expect(
+    manager.handlePopState({
+      __reactleafModal: {
+        id: manager.getSnapshot()[0]!.id,
+      },
+    }),
+  ).toBe(false);
+  await expect(p2).resolves.toBe('done');
   expect(manager.getSnapshot()).toHaveLength(1);
 
   manager.close(manager.getSnapshot()[0]!.id, { historyBack: true });
@@ -172,12 +197,27 @@ test('manual popstate closes only the top modal', async () => {
   const p1 = manager.open(Required, { message: 'a' });
   const p2 = manager.open(Required, { message: 'b' });
 
-  expect(manager.handlePopState()).toBe(true);
+  const destinationState = {
+    __reactleafModal: {
+      id: manager.getSnapshot()[0]!.id,
+    },
+  };
+
+  expect(manager.handlePopState(destinationState)).toBe(true);
   await expect(p2).resolves.toBeUndefined();
   expect(manager.getSnapshot()).toHaveLength(1);
 
   manager.close(manager.getSnapshot()[0]!.id, { historyBack: true });
   await expect(p1).resolves.toBeUndefined();
+});
+
+test('manual popstate to base closes the top modal', async () => {
+  const manager = new ModalManager();
+  const p = manager.open(Required, { message: 'a' });
+
+  expect(manager.handlePopState(null)).toBe(true);
+  await expect(p).resolves.toBeUndefined();
+  expect(manager.getSnapshot()).toHaveLength(0);
 });
 
 test('closeWithResult is a no-op for unknown id', () => {
@@ -205,6 +245,52 @@ test('closeWithResult can skip history back via options', () => {
 
   expect(manager.closeWithResult(id, 'ok', { historyBack: true })).toBe(true);
   expect(back).not.toHaveBeenCalled();
+});
+
+test('closeWithResult delegates to close request listener when installed', async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const back = (globalThis as any).window.history.back as jest.Mock;
+  const manager = new ModalManager();
+  const p = manager.open(Empty);
+  const id = manager.getSnapshot()[0]!.id;
+  const listener = jest.fn(() => true);
+
+  const unsetListener = manager.setCloseRequestListener(listener);
+
+  expect(manager.closeWithResult(id, 'ok')).toBe(true);
+  expect(listener).toHaveBeenCalledWith({
+    id,
+    result: 'ok',
+    options: undefined,
+    historySettled: expect.any(Promise),
+  });
+  expect(manager.getSnapshot()).toHaveLength(1);
+  expect(back).toHaveBeenCalledTimes(1);
+
+  let settled = false;
+  void p.then(() => {
+    settled = true;
+  });
+  await Promise.resolve();
+  expect(settled).toBe(false);
+
+  expect(manager.completeCloseWithResult(id, 'ok')).toBe(true);
+  await expect(p).resolves.toBe('ok');
+  unsetListener();
+});
+
+test('unsetting close request listener restores direct close behavior', async () => {
+  const manager = new ModalManager();
+  const p = manager.open(Empty);
+  const id = manager.getSnapshot()[0]!.id;
+  const listener = jest.fn(() => true);
+
+  const unsetListener = manager.setCloseRequestListener(listener);
+  unsetListener();
+
+  expect(manager.close(id)).toBe(true);
+  expect(listener).not.toHaveBeenCalled();
+  await expect(p).resolves.toBeUndefined();
 });
 
 test('subscribe does not call listener when stack is empty', () => {
@@ -248,15 +334,14 @@ test('unsubscribe stops further notifications', () => {
 });
 
 test('open merges Component.modalOptions with call options (later wins)', () => {
-  const dimFalse = componentWithModalOptions({ dim: false });
+  const layerClickDisabled = componentWithModalOptions({ closeOnOutsideClick: false });
   const manager = new ModalManager();
-  void manager.open(dimFalse, null, { closeOnOverlayClick: true });
+  void manager.open(layerClickDisabled, null, { closeOnOutsideClick: true });
 
   const [entry] = manager.getSnapshot();
   expect(entry?.options).toEqual(
     expect.objectContaining({
-      dim: false,
-      closeOnOverlayClick: true,
+      closeOnOutsideClick: true,
     }),
   );
 });
@@ -269,6 +354,29 @@ test('abort on AbortController resolves open with null and clears stack', async 
   abortController.abort();
   await expect(p).resolves.toBeNull();
   expect(manager.getSnapshot()).toHaveLength(0);
+});
+
+test('abort on AbortController delegates through close request listener when installed', async () => {
+  const manager = new ModalManager();
+  const abortController = new AbortController();
+  const listener = jest.fn(() => true);
+  const unsetListener = manager.setCloseRequestListener(listener);
+  const p = manager.open(Empty, null, { abortController });
+  const id = manager.getSnapshot()[0]!.id;
+
+  abortController.abort();
+
+  expect(listener).toHaveBeenCalledWith({
+    id,
+    result: null,
+    options: undefined,
+    historySettled: expect.any(Promise),
+  });
+  expect(manager.getSnapshot()).toHaveLength(1);
+
+  expect(manager.completeCloseWithResult(id, null)).toBe(true);
+  await expect(p).resolves.toBeNull();
+  unsetListener();
 });
 
 test('normal close removes abort listener before the signal aborts', async () => {

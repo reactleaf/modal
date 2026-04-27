@@ -1,7 +1,0 @@
-.confirm .modal-buttons button {
-  width: 50%;
-}
-
-.confirm .modal-buttons button + button {
-  border-left: 1px solid white;
-}

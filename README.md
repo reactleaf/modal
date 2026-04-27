@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/@reactleaf%2Fmodal.svg)](https://badge.fury.io/js/@reactleaf%2Fmodal)
 
-React modal library with direct component imports, promise-based results, and context-powered modal state.
+React modal library for opening and closing type-safe modals from anywhere in your code.
 
 - [한국어](./README-ko.md)
 - [Migration Guide](./MIGRATION_TO_V2.md)
@@ -11,6 +11,12 @@ React modal library with direct component imports, promise-based results, and co
 
 `@reactleaf/modal` v2 removes the register system and hook factory from v1.
 You create a `ModalManager`, pass the same instance to `ModalProvider`, and call `modal.open(...)` anywhere you need.
+
+## Goals
+
+- Open any modal component directly from anywhere in your code.
+- Keep modal props and resolved results type-safe.
+- Let each modal own its custom UI while `ModalProvider` owns the stack, shade, and scroll behavior.
 
 ### What changed in v2
 
@@ -40,7 +46,11 @@ const modal = new ModalManager();
 
 function App() {
   return (
-    <ModalProvider manager={modal} defaultOverlayOptions={{ closeOnOverlayClick: true }}>
+    <ModalProvider
+      manager={modal}
+      defaultLayerOptions={{ closeOnOutsideClick: true }}
+      stackOptions={{ shade: true, preventScroll: true }}
+    >
       <YourApp />
     </ModalProvider>
   );
@@ -105,7 +115,7 @@ import { ModalManager, ModalProvider } from '@reactleaf/modal';
 
 const modal = new ModalManager();
 
-<ModalProvider manager={modal} defaultOverlayOptions={{ closeDelay: 300 }}>
+<ModalProvider manager={modal} defaultLayerOptions={{ closeDelay: 300 }}>
   <App />
 </ModalProvider>;
 ```
@@ -113,7 +123,8 @@ const modal = new ModalManager();
 Props:
 
 - `manager: ModalManager`
-- `defaultOverlayOptions?: OverlayOptions`
+- `defaultLayerOptions?: LayerOptions`
+- `stackOptions?: StackOptions`
 - `children: React.ReactNode`
 
 ### `modal.open(Component, props?, options?)`
@@ -230,15 +241,18 @@ Exposed values:
 ## Modal Options
 
 ```ts
-export interface OverlayOptions {
+export interface LayerOptions {
   className?: string;
   closeDelay?: number;
-  closeOnOverlayClick?: boolean;
-  dim?: boolean;
+  closeOnOutsideClick?: boolean;
+}
+
+export interface StackOptions {
+  shade?: boolean;
   preventScroll?: boolean;
 }
 
-export interface ModalOptions extends OverlayOptions {
+export interface ModalOptions extends LayerOptions {
   abortController?: AbortController;
 }
 ```
@@ -247,20 +261,24 @@ export interface ModalOptions extends OverlayOptions {
 
 Options are merged in this order:
 
-1. Provider defaults
+1. Provider layer defaults
 2. Component defaults
 3. Call-time options
 
 ```tsx
-<ModalProvider manager={modal} defaultOverlayOptions={{ dim: true }}>
+<ModalProvider
+  manager={modal}
+  defaultLayerOptions={{ closeOnOutsideClick: true }}
+  stackOptions={{ shade: true, preventScroll: true }}
+>
   <App />
 </ModalProvider>
 
 Alert.modalOptions = {
-  closeOnOverlayClick: false,
+  closeOnOutsideClick: false,
 };
 
-await modal.open(Alert, { message: 'Hello' }, { className: 'alert-overlay' });
+await modal.open(Alert, { message: 'Hello' }, { className: 'alert-layer' });
 ```
 
 ### Component-level defaults
@@ -277,8 +295,7 @@ const Alert: ModalComponent<AlertProps> = ({ message }) => {
 };
 
 Alert.modalOptions = {
-  closeOnOverlayClick: false,
-  dim: true,
+  closeOnOutsideClick: false,
 };
 ```
 
@@ -324,16 +341,16 @@ document.addEventListener('error', () => {
 
 ## Animation
 
-The overlay becomes visible one frame after mount, so opening animations can use the `.visible` class.
+The layer becomes visible one frame after mount, so opening animations can use the `.visible` class.
 For closing animations, set `closeDelay` to match your transition duration.
 
 ```css
-.modal-overlay {
+.modal-layer {
   opacity: 0;
   transition: opacity 0.3s;
 }
 
-.modal-overlay.visible {
+.modal-layer.visible {
   opacity: 1;
 }
 ```
@@ -348,7 +365,7 @@ const { visible } = useModalInstance();
 
 - Pressing `Escape` closes the top modal
 - Browser back closes the top modal
-- Overlay click closes the modal when `closeOnOverlayClick` is enabled
+- Outside click closes the modal when `closeOnOutsideClick` is enabled
 - Multiple modals stack in open order
 
 ## Styling
@@ -361,25 +378,26 @@ import '@reactleaf/modal/style.css';
 
 Main selectors:
 
-- `.modal-overlay`
-- `.modal-overlay.dim`
-- `.modal-overlay.visible`
+- `.modal-layer`
+- `.modal-layer.visible`
+- `.modal-shade`
+- `.modal-shade.visible`
 
 ```css
-.modal-overlay {
+.modal-layer {
   opacity: 0;
   transition: opacity 0.3s;
 }
 
-.modal-overlay.dim {
+.modal-shade {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.modal-overlay.visible {
+.modal-layer.visible {
   opacity: 1;
 }
 ```
 
 ## Working examples
 
-See the examples in [`app/examples/`](./app/examples/).
+See the examples in [`docs/app`](./docs/app).

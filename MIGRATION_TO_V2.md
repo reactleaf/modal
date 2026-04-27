@@ -79,7 +79,11 @@ const modal = new ModalManager();
 
 function App() {
   return (
-    <ModalProvider manager={modal} defaultOverlayOptions={{ closeOnOverlayClick: true }}>
+    <ModalProvider
+      manager={modal}
+      defaultLayerOptions={{ closeOnOutsideClick: true }}
+      stackOptions={{ shade: true, preventScroll: true }}
+    >
       <YourApp />
     </ModalProvider>
   );
@@ -130,8 +134,7 @@ const Alert = ({ message }: AlertProps) => {
 };
 
 Alert.modalOptions = {
-  closeOnOverlayClick: false,
-  dim: true,
+  closeOnOutsideClick: false,
 };
 
 export default Alert;
@@ -212,18 +215,22 @@ await modal.open(EmptyPropsModal, null, { abortController: controller });
 
 Options are merged in this order:
 
-1. Provider default options
+1. Provider layer default options
 2. Component default options
 3. Call-time options
 
 ```tsx
-<ModalProvider manager={modal} defaultOverlayOptions={{ dim: true }}>
+<ModalProvider
+  manager={modal}
+  defaultLayerOptions={{ closeOnOutsideClick: true }}
+  stackOptions={{ shade: true, preventScroll: true }}
+>
   <App />
 </ModalProvider>
 
-Alert.modalOptions = { closeOnOverlayClick: false };
+Alert.modalOptions = { closeOnOutsideClick: false };
 
-await modal.open(Alert, { message: 'Hello' }, { className: 'alert-overlay' });
+await modal.open(Alert, { message: 'Hello' }, { className: 'alert-layer' });
 ```
 
 ### 2. Context-based modal props
@@ -327,5 +334,5 @@ If you get `useModalInstance must be used within a ModalInstanceProvider`:
 ## Additional resources
 
 - [README](./README.md)
-- [Example Components](./app/examples/)
+- [Docs Examples](./docs/app/)
 - [Migration Context](./context.md)

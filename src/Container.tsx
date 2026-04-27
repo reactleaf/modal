@@ -55,9 +55,9 @@ function OpenedModal<R extends Register>({ importer, type, id, props, overlayOpt
 
   return (
     <ModalContext.Provider value={{ ...context, closeSelf: close }}>
-      <ModalOverlay {...overlayProps} closeSelf={close}>
+      <ModalLayer {...overlayProps} closeSelf={close}>
         <Component {...props} />
-      </ModalOverlay>
+      </ModalLayer>
     </ModalContext.Provider>
   );
 }
@@ -66,7 +66,7 @@ interface OverlayProps extends OverlayOptions {
   closeSelf: () => void | PromiseLike<unknown>;
   children: React.ReactElement;
 }
-const ModalOverlay: React.FC<OverlayProps> = ({
+const ModalLayer: React.FC<OverlayProps> = ({
   className = "",
   closeDelay = 0,
   closeOnOverlayClick = true,
@@ -106,7 +106,7 @@ const ModalOverlay: React.FC<OverlayProps> = ({
   }, []);
 
   return (
-    <div className={cx("modal-overlay", className, { dim, visible })} data-class="reactleaf" onClick={onClick}>
+    <div className={cx("modal-layer", className, { dim, visible })} data-class="reactleaf" onClick={onClick}>
       {cloneElement(children, { close: delayedClose, visible })}
     </div>
   );

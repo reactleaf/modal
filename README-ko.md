@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/@reactleaf%2Fmodal.svg)](https://badge.fury.io/js/@reactleaf%2Fmodal)
 
-직접 컴포넌트 import, Promise 기반 결과값, 컨텍스트 기반 모달 상태를 제공하는 리액트 모달 라이브러리입니다.
+코드 어디에서나 type-safe하게 모달을 열고 닫기 위한 리액트 모달 라이브러리입니다.
 
 - [English](./README.md)
 - [마이그레이션 가이드](./MIGRATION_TO_V2.md)
@@ -11,6 +11,12 @@
 
 `@reactleaf/modal` v2는 v1의 register 시스템과 hook factory를 제거했습니다.
 이제 사용자가 `ModalManager`를 직접 생성하고, 같은 인스턴스를 `ModalProvider`에 연결한 뒤 `modal.open(...)`으로 모달을 엽니다.
+
+## 목표
+
+- 코드 어디에서나 원하는 모달 컴포넌트를 직접 열 수 있게 합니다.
+- 모달 props와 닫힐 때 resolve되는 결과값을 type-safe하게 유지합니다.
+- 각 모달은 커스텀 UI를 직접 소유하고, `ModalProvider`는 stack, shade, scroll 동작을 소유합니다.
 
 ### v2에서 바뀐 점
 
@@ -40,7 +46,11 @@ const modal = new ModalManager();
 
 function App() {
   return (
-    <ModalProvider manager={modal} defaultOverlayOptions={{ closeOnOverlayClick: true }}>
+    <ModalProvider
+      manager={modal}
+      defaultLayerOptions={{ closeOnOutsideClick: true }}
+      stackOptions={{ shade: true, preventScroll: true }}
+    >
       <YourApp />
     </ModalProvider>
   );
@@ -105,7 +115,7 @@ import { ModalManager, ModalProvider } from '@reactleaf/modal';
 
 const modal = new ModalManager();
 
-<ModalProvider manager={modal} defaultOverlayOptions={{ closeDelay: 300 }}>
+<ModalProvider manager={modal} defaultLayerOptions={{ closeDelay: 300 }}>
   <App />
 </ModalProvider>;
 ```
@@ -113,7 +123,8 @@ const modal = new ModalManager();
 Props:
 
 - `manager: ModalManager`
-- `defaultOverlayOptions?: OverlayOptions`
+- `defaultLayerOptions?: LayerOptions`
+- `stackOptions?: StackOptions`
 - `children: React.ReactNode`
 
 ### `modal.open(Component, props?, options?)`
@@ -230,15 +241,18 @@ const { closeSelf, visible } = useModalInstance();
 ## 모달 옵션
 
 ```ts
-export interface OverlayOptions {
+export interface LayerOptions {
   className?: string;
   closeDelay?: number;
-  closeOnOverlayClick?: boolean;
-  dim?: boolean;
+  closeOnOutsideClick?: boolean;
+}
+
+export interface StackOptions {
+  shade?: boolean;
   preventScroll?: boolean;
 }
 
-export interface ModalOptions extends OverlayOptions {
+export interface ModalOptions extends LayerOptions {
   abortController?: AbortController;
 }
 ```
@@ -247,20 +261,24 @@ export interface ModalOptions extends OverlayOptions {
 
 옵션은 아래 순서로 병합됩니다.
 
-1. Provider 기본값
+1. Provider layer 기본값
 2. 컴포넌트 기본값
 3. 호출 시점 옵션
 
 ```tsx
-<ModalProvider manager={modal} defaultOverlayOptions={{ dim: true }}>
+<ModalProvider
+  manager={modal}
+  defaultLayerOptions={{ closeOnOutsideClick: true }}
+  stackOptions={{ shade: true, preventScroll: true }}
+>
   <App />
 </ModalProvider>
 
 Alert.modalOptions = {
-  closeOnOverlayClick: false,
+  closeOnOutsideClick: false,
 };
 
-await modal.open(Alert, { message: 'Hello' }, { className: 'alert-overlay' });
+await modal.open(Alert, { message: 'Hello' }, { className: 'alert-layer' });
 ```
 
 ### 컴포넌트 기본 옵션
@@ -277,8 +295,7 @@ const Alert: ModalComponent<AlertProps> = ({ message }) => {
 };
 
 Alert.modalOptions = {
-  closeOnOverlayClick: false,
-  dim: true,
+  closeOnOutsideClick: false,
 };
 ```
 
@@ -324,16 +341,16 @@ document.addEventListener('error', () => {
 
 ## 애니메이션
 
-오버레이는 마운트 후 한 프레임 뒤에 `.visible` 클래스를 가지므로, 열리는 애니메이션을 쉽게 붙일 수 있습니다.
+레이어는 마운트 후 한 프레임 뒤에 `.visible` 클래스를 가지므로, 열리는 애니메이션을 쉽게 붙일 수 있습니다.
 닫히는 애니메이션을 쓰려면 `closeDelay`를 transition 길이에 맞춰 설정하세요.
 
 ```css
-.modal-overlay {
+.modal-layer {
   opacity: 0;
   transition: opacity 0.3s;
 }
 
-.modal-overlay.visible {
+.modal-layer.visible {
   opacity: 1;
 }
 ```
@@ -348,7 +365,7 @@ const { visible } = useModalInstance();
 
 - `Escape` 키를 누르면 최상위 모달이 닫힙니다.
 - 브라우저 뒤로가기를 누르면 최상위 모달이 닫힙니다.
-- `closeOnOverlayClick`이 켜져 있으면 바깥 영역 클릭으로 닫힙니다.
+- `closeOnOutsideClick`이 켜져 있으면 바깥 영역 클릭으로 닫힙니다.
 - 여러 모달을 스택처럼 쌓아 열 수 있습니다.
 
 ## 스타일링
@@ -361,25 +378,26 @@ import '@reactleaf/modal/style.css';
 
 주요 셀렉터:
 
-- `.modal-overlay`
-- `.modal-overlay.dim`
-- `.modal-overlay.visible`
+- `.modal-layer`
+- `.modal-layer.visible`
+- `.modal-shade`
+- `.modal-shade.visible`
 
 ```css
-.modal-overlay {
+.modal-layer {
   opacity: 0;
   transition: opacity 0.3s;
 }
 
-.modal-overlay.dim {
+.modal-shade {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.modal-overlay.visible {
+.modal-layer.visible {
   opacity: 1;
 }
 ```
 
 ## 동작 예제
 
-[`app/examples/`](./app/examples/)를 참고하세요.
+[`docs/app`](./docs/app)를 참고하세요.
