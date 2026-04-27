@@ -3,29 +3,39 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { ModalInstanceProvider } from "./context";
 import ModalManager from "./manager";
-import { CloseRequest, LayerOptions, ModalState, StackOptions } from "./types";
+import type { ReplaceSelf } from "./context";
+import {
+  CloseRequest,
+  LayerOptions,
+  ModalComponent,
+  ModalOptions,
+  ModalState,
+  ReplaceRequest,
+  RootOptions,
+} from "./types";
 
 const DEFAULT_LAYER_OPTIONS: LayerOptions = {
   closeDelay: 0,
   dim: true,
 };
 
-const DEFAULT_STACK_OPTIONS: Required<StackOptions> = {
+const DEFAULT_ROOT_OPTIONS: Required<RootOptions> = {
   preventScroll: true,
 };
 
 interface Props {
   manager: ModalManager;
   defaultLayerOptions?: Partial<LayerOptions>;
-  stackOptions?: Partial<StackOptions>;
+  rootOptions?: Partial<RootOptions>;
   children: React.ReactNode;
 }
 
-export function ModalProvider({ manager, defaultLayerOptions, stackOptions, children }: Props) {
+export function ModalProvider({ manager, defaultLayerOptions, rootOptions, children }: Props) {
   const [modalStack, setModalStack] = useState<ModalState[]>([]);
   const [closeRequests, setCloseRequests] = useState<Record<string, CloseRequest>>({});
-  const finalStackOptions = getFinalStackOptions(stackOptions);
-  const shouldPreventScroll = modalStack.length > 0 && finalStackOptions.preventScroll;
+  const [replaceRequests, setReplaceRequests] = useState<Record<string, ReplaceRequest>>({});
+  const finalRootOptions = getFinalRootOptions(rootOptions);
+  const shouldPreventScroll = modalStack.length > 0 && finalRootOptions.preventScroll;
   const topModal = modalStack[modalStack.length - 1];
 
   useEffect(() => manager.subscribe(setModalStack), [manager]);
@@ -33,6 +43,17 @@ export function ModalProvider({ manager, defaultLayerOptions, stackOptions, chil
   useEffect(() => {
     return manager.setCloseRequestListener((request) => {
       setCloseRequests((prev) => {
+        if (prev[request.id]) return prev;
+        return { ...prev, [request.id]: request };
+      });
+
+      return true;
+    });
+  }, [manager]);
+
+  useEffect(() => {
+    return manager.setReplaceRequestListener((request) => {
+      setReplaceRequests((prev) => {
         if (prev[request.id]) return prev;
         return { ...prev, [request.id]: request };
       });
@@ -88,10 +109,17 @@ export function ModalProvider({ manager, defaultLayerOptions, stackOptions, chil
             modal={modal}
             layerOptions={defaultLayerOptions}
             closeRequest={closeRequests[modal.id]}
+            replaceRequest={replaceRequests[modal.id]}
             isTop={modal.id === topModal?.id}
             stackIndex={index}
             onCloseRequestHandled={() => {
               setCloseRequests((prev) => {
+                const { [modal.id]: _handledRequest, ...next } = prev;
+                return next;
+              });
+            }}
+            onReplaceRequestHandled={() => {
+              setReplaceRequests((prev) => {
                 const { [modal.id]: _handledRequest, ...next } = prev;
                 return next;
               });
@@ -103,10 +131,10 @@ export function ModalProvider({ manager, defaultLayerOptions, stackOptions, chil
   );
 }
 
-function getFinalStackOptions(stackOptions: Partial<StackOptions> | undefined): Required<StackOptions> {
+function getFinalRootOptions(rootOptions: Partial<RootOptions> | undefined): Required<RootOptions> {
   return {
-    ...DEFAULT_STACK_OPTIONS,
-    ...stackOptions,
+    ...DEFAULT_ROOT_OPTIONS,
+    ...rootOptions,
   };
 }
 
@@ -130,9 +158,11 @@ interface LayerProps {
   modal: ModalState;
   layerOptions: Partial<LayerOptions> | undefined;
   closeRequest: CloseRequest | undefined;
+  replaceRequest: ReplaceRequest | undefined;
   isTop: boolean;
   stackIndex: number;
   onCloseRequestHandled: () => void;
+  onReplaceRequestHandled: () => void;
 }
 
 function ModalLayer({
@@ -140,15 +170,21 @@ function ModalLayer({
   modal,
   layerOptions,
   closeRequest,
+  replaceRequest,
   isTop,
   stackIndex,
   onCloseRequestHandled,
+  onReplaceRequestHandled,
 }: LayerProps) {
-  const [visible, setVisible] = useState(false);
+  const [layerVisible, setLayerVisible] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
   const isClosingRef = useRef(false);
 
   useEffect(() => {
-    void window.requestAnimationFrame(() => setVisible(true));
+    void window.requestAnimationFrame(() => {
+      setLayerVisible(true);
+      setContentVisible(true);
+    });
   }, []);
 
   const finalOptions = getFinalLayerOptions(modal, layerOptions);
@@ -161,6 +197,12 @@ function ModalLayer({
     );
   }, [closeRequest]);
 
+  useEffect(() => {
+    if (!replaceRequest) return;
+
+    void replaceWithTransition().then(onReplaceRequestHandled);
+  }, [replaceRequest]);
+
   function closeWithTransition(
     result?: unknown,
     options?: CloseRequest["options"],
@@ -171,7 +213,8 @@ function ModalLayer({
     if (isClosingRef.current) return Promise.resolve();
 
     isClosingRef.current = true;
-    setVisible(false);
+    setContentVisible(false);
+    setLayerVisible(false);
 
     const animationSettled =
       delay > 0
@@ -188,9 +231,39 @@ function ModalLayer({
     });
   }
 
+  function replaceWithTransition(): Promise<void> {
+    const delay = finalOptions.closeDelay || 0;
+
+    if (isClosingRef.current) return Promise.resolve();
+
+    isClosingRef.current = true;
+    setContentVisible(false);
+
+    const animationSettled =
+      delay > 0
+        ? new Promise<void>((resolve) => {
+            window.requestAnimationFrame(() => {
+              setTimeout(resolve, delay);
+            });
+          })
+        : Promise.resolve();
+
+    return animationSettled.then(() => {
+      manager.completeReplace(modal.id);
+      window.requestAnimationFrame(() => {
+        isClosingRef.current = false;
+        setContentVisible(true);
+      });
+    });
+  }
+
   function closeSelf(result?: unknown): Promise<void> {
     return closeWithTransition(result);
   }
+
+  const replaceSelf = ((Component: ModalComponent<unknown>, props?: unknown, options?: ModalOptions) => {
+    return manager.replaceById(modal.id, Component as never, props as never, options);
+  }) as ReplaceSelf;
 
   function handleLayerClick(e: React.MouseEvent) {
     if (!isTop) return;
@@ -203,14 +276,15 @@ function ModalLayer({
   return (
     <div
       className={cx("modal-layer", getDimClassName(finalOptions.dim), finalOptions.className, {
-        visible,
+        visible: layerVisible,
       })}
       data-class="reactleaf"
+      data-content-visible={contentVisible ? "true" : undefined}
       data-top={isTop ? "true" : undefined}
       onClick={handleLayerClick}
       style={{ zIndex: 1001 + stackIndex }}
     >
-      <ModalInstanceProvider visible={visible} closeSelf={closeSelf}>
+      <ModalInstanceProvider visible={contentVisible} closeSelf={closeSelf} replaceSelf={replaceSelf}>
         <modal.Component {...modal.props} />
       </ModalInstanceProvider>
     </div>

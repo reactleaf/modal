@@ -4,7 +4,8 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { act } from "react";
 
 import { ModalProvider } from "./ModalProvider";
-import ModalManager from "./manager";
+import { useModalInstance } from "./context";
+import ModalManager, { MODAL_REPLACED } from "./manager";
 import type { ModalComponent } from "./types";
 
 const TestModal: ModalComponent<Record<string, never>> = Object.assign(
@@ -13,6 +14,26 @@ const TestModal: ModalComponent<Record<string, never>> = Object.assign(
   },
   { displayName: "TestModal" },
 ) as ModalComponent<Record<string, never>>;
+
+const ReplacementModal: ModalComponent<{ label: string }> = ({ label }) => {
+  return <div data-testid="replacement-modal">{label}</div>;
+};
+
+const SelfReplacingModal: ModalComponent<{ onReplace: (promise: Promise<unknown>) => void }> = ({ onReplace }) => {
+  const { replaceSelf } = useModalInstance();
+
+  return (
+    <button
+      type="button"
+      data-testid="replace-self"
+      onClick={() => {
+        onReplace(replaceSelf(ReplacementModal, { label: "self-next" }, { dim: "self-dim" }));
+      }}
+    >
+      replace
+    </button>
+  );
+};
 
 function mockHistoryChain() {
   const stack: unknown[] = [null];
@@ -37,7 +58,7 @@ function mockHistoryChain() {
 }
 
 /** TestModal open 결과용 (manager.open 오버로드는 ReturnType이 unknown으로 뭉개짐) */
-type TestModalPromise = Promise<void | null | undefined | string>;
+type TestModalPromise = Promise<void | null | undefined | string | typeof MODAL_REPLACED>;
 
 /**
  * manager.open → notifyListeners → setModalStack 은 동기이므로 act 안에서 호출.
@@ -173,7 +194,7 @@ test("preventScroll: true sets body overflow hidden while stack non-empty, resto
   const manager = new ModalManager();
 
   render(
-    <ModalProvider manager={manager} stackOptions={{ preventScroll: true }}>
+    <ModalProvider manager={manager} rootOptions={{ preventScroll: true }}>
       <span>app</span>
     </ModalProvider>,
   );
@@ -201,7 +222,7 @@ test("preventScroll: false does not change body overflow", async () => {
   const manager = new ModalManager();
 
   render(
-    <ModalProvider manager={manager} stackOptions={{ preventScroll: false }}>
+    <ModalProvider manager={manager} rootOptions={{ preventScroll: false }}>
       <span>app</span>
     </ModalProvider>,
   );
@@ -227,7 +248,7 @@ test("unmounting ModalProvider restores body overflow when preventScroll was act
   const manager = new ModalManager();
 
   const { unmount } = render(
-    <ModalProvider manager={manager} stackOptions={{ preventScroll: true }}>
+    <ModalProvider manager={manager} rootOptions={{ preventScroll: true }}>
       <span>app</span>
     </ModalProvider>,
   );
@@ -479,6 +500,137 @@ test("closeDelay 0 closes without extra delay", async () => {
   await flushClosePipeline(manager);
 
   await expect(p).resolves.toBe("x");
+});
+
+test("replace keeps the same layer while swapping content after closeDelay", async () => {
+  mockHistoryChain();
+  jest.useFakeTimers();
+  jest.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+    cb(0);
+    return 0;
+  });
+
+  const manager = new ModalManager();
+
+  render(
+    <ModalProvider manager={manager} defaultLayerOptions={{ closeDelay: 50 }}>
+      <span>app</span>
+    </ModalProvider>,
+  );
+
+  const previous = actOpenTestModal(manager);
+  const id = manager.getSnapshot()[0]!.id;
+  const layer = document.querySelector(".modal-layer");
+  expect(layer).toBeTruthy();
+  expect(layer?.classList.contains("dim")).toBe(true);
+  expect(layer?.classList.contains("visible")).toBe(true);
+  expect(layer?.getAttribute("data-content-visible")).toBe("true");
+
+  let next!: Promise<unknown>;
+  await act(async () => {
+    next = manager.replaceById(id, ReplacementModal, { label: "next" }, { dim: "replacement-dim" });
+  });
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  expect(manager.getSnapshot()[0]?.id).toBe(id);
+  expect(manager.getSnapshot()[0]?.Component).toBe(TestModal);
+  expect(layer?.classList.contains("visible")).toBe(true);
+  expect(layer?.classList.contains("dim")).toBe(true);
+  expect(layer?.getAttribute("data-content-visible")).toBeNull();
+
+  await act(async () => {
+    jest.advanceTimersByTime(50);
+  });
+  await waitFor(() => expect(manager.getSnapshot()[0]?.Component).toBe(ReplacementModal));
+
+  const replacedLayer = document.querySelector(".modal-layer");
+  expect(replacedLayer).toBe(layer);
+  expect(replacedLayer?.classList.contains("replacement-dim")).toBe(true);
+  expect(replacedLayer?.classList.contains("visible")).toBe(true);
+  expect(replacedLayer?.getAttribute("data-content-visible")).toBe("true");
+  expect(await waitFor(() => document.querySelector('[data-testid="replacement-modal"]')?.textContent)).toBe("next");
+  await expect(previous).resolves.toBe(MODAL_REPLACED);
+
+  await act(async () => {
+    manager.closeWithResult(id, "done");
+  });
+  await flushClosePipeline(manager);
+  await expect(next).resolves.toBe("done");
+
+  jest.useRealTimers();
+});
+
+test("replaceSelf replaces the current layer without looking up the top modal externally", async () => {
+  mockHistoryChain();
+  jest.useFakeTimers();
+  jest.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+    cb(0);
+    return 0;
+  });
+
+  const manager = new ModalManager();
+  let next!: Promise<unknown>;
+
+  render(
+    <ModalProvider manager={manager} defaultLayerOptions={{ closeDelay: 50 }}>
+      <span>app</span>
+    </ModalProvider>,
+  );
+
+  let previous!: Promise<unknown>;
+  act(() => {
+    previous = manager.open(SelfReplacingModal, {
+      onReplace: (promise) => {
+        next = promise;
+      },
+    });
+  });
+
+  const id = manager.getSnapshot()[0]!.id;
+  const layer = document.querySelector(".modal-layer");
+  expect(layer).toBeTruthy();
+
+  const replaceButton = await waitFor(() => {
+    const button = document.querySelector('[data-testid="replace-self"]');
+    expect(button).toBeTruthy();
+    return button as HTMLElement;
+  });
+
+  await act(async () => {
+    fireEvent.click(replaceButton);
+  });
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  expect(manager.getSnapshot()[0]?.id).toBe(id);
+  expect(manager.getSnapshot()[0]?.Component).toBe(SelfReplacingModal);
+  expect(layer?.classList.contains("visible")).toBe(true);
+  expect(layer?.getAttribute("data-content-visible")).toBeNull();
+
+  await act(async () => {
+    jest.advanceTimersByTime(50);
+  });
+  await waitFor(() => expect(manager.getSnapshot()[0]?.Component).toBe(ReplacementModal));
+
+  const replacedLayer = document.querySelector(".modal-layer");
+  expect(replacedLayer).toBe(layer);
+  expect(replacedLayer?.classList.contains("self-dim")).toBe(true);
+  expect(replacedLayer?.getAttribute("data-content-visible")).toBe("true");
+  expect(await waitFor(() => document.querySelector('[data-testid="replacement-modal"]')?.textContent)).toBe(
+    "self-next",
+  );
+  await expect(previous).resolves.toBe(MODAL_REPLACED);
+
+  await act(async () => {
+    manager.closeWithResult(id, "self-done");
+  });
+  await flushClosePipeline(manager);
+  await expect(next).resolves.toBe("self-done");
+
+  jest.useRealTimers();
 });
 
 test("close request path: closeWithResult does not remove modal until history + transition complete", async () => {

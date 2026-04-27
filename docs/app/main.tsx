@@ -1,19 +1,19 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { MODAL_ABORTED, ModalManager, ModalProvider } from '@reactleaf/modal';
-import { Alert, Confirm, Prompt, PromptProps } from './example-modals';
-import '../../style.css';
-import './styles.css';
+import { MODAL_ABORTED, MODAL_REPLACED, ModalManager, ModalProvider } from "@reactleaf/modal";
+import React from "react";
+import { createRoot } from "react-dom/client";
+import "../../style.css";
+import { Alert, Confirm, EmailVerification, Prompt, PromptProps } from "./example-modals";
+import "./styles.css";
 
 const modal = new ModalManager();
 
 function App() {
-  const [lastResult, setLastResult] = React.useState('No modal has resolved yet.');
+  const [lastResult, setLastResult] = React.useState("No modal has resolved yet.");
 
   async function handleAlert() {
     const result = await modal.open(Alert, {
-      message: 'Hello, this is an alert!',
-      confirmText: 'OK',
+      message: "Hello, this is an alert!",
+      confirmText: "OK",
     });
 
     setLastResult(`Alert result: ${String(result)}`);
@@ -21,34 +21,24 @@ function App() {
 
   async function handleConfirm() {
     const result = await modal.open(Confirm, {
-      message: 'Are you sure you want to delete this item?',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      message: "Are you sure you want to delete this item?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
     });
 
     setLastResult(`Confirm result: ${String(result)}`);
   }
 
-  async function handleStack() {
-    await modal.open(Alert, {
-      message: 'First modal opened.',
-      confirmText: 'Continue',
+  async function handleSequential() {
+    const firstResult = await modal.open(EmailVerification, {
+      onComplete: (verified) => {
+        setLastResult(`Sequential flow result: ${String(verified)}`);
+      },
     });
 
-    const shouldContinue = await modal.open(Confirm, {
-      message: 'Open another modal?',
-      confirmText: 'Open',
-      cancelText: 'Stop',
-    });
-
-    if (shouldContinue) {
-      await modal.open(Alert, {
-        message: 'Third modal. Try Escape or browser Back.',
-        confirmText: 'Done',
-      });
+    if (firstResult !== MODAL_REPLACED) {
+      setLastResult(`Sequential flow result: ${String(firstResult)}`);
     }
-
-    setLastResult(`Stack flow result: ${String(shouldContinue)}`);
   }
 
   async function handleAbort() {
@@ -58,8 +48,8 @@ function App() {
     const result = await modal.open(
       Alert,
       {
-        message: 'This modal will close in 3 seconds.',
-        confirmText: 'Close now',
+        message: "This modal will close in 3 seconds.",
+        confirmText: "Close now",
       },
       {
         abortController: controller,
@@ -67,13 +57,13 @@ function App() {
     );
 
     window.clearTimeout(timer);
-    setLastResult(`Abort result: ${result === MODAL_ABORTED ? 'aborted' : String(result)}`);
+    setLastResult(`Abort result: ${result === MODAL_ABORTED ? "aborted" : String(result)}`);
   }
 
   async function handlePrompt() {
     const result = await modal.open<PromptProps, string | null>(Prompt, {
-      title: 'What should we call this item?',
-      placeholder: 'Item name',
+      title: "What should we call this item?",
+      placeholder: "Item name",
     });
 
     setLastResult(`Prompt result: ${String(result)}`);
@@ -83,7 +73,7 @@ function App() {
     <ModalProvider
       manager={modal}
       defaultLayerOptions={{ closeDelay: 180, closeOnOutsideClick: true, dim: true }}
-      stackOptions={{ preventScroll: true }}
+      rootOptions={{ preventScroll: true }}
     >
       <header className="site-header">
         <nav className="nav" aria-label="Primary">
@@ -133,15 +123,24 @@ if (confirmed) {
             <p className="eyebrow">Interactive examples</p>
             <h2>Open some modals and see how it works.</h2>
             <p>
-              Try common flows: a simple alert, a confirmation dialog, stacked modals, timed abort, and a typed prompt.
+              Try common flows: a simple alert, a confirmation dialog, sequential replacement, timed abort, and a typed
+              prompt.
             </p>
           </div>
 
           <div className="example-grid">
             <ExampleCard title="Alert" copy="Single action modal with a resolved result." onClick={handleAlert} />
             <ExampleCard title="Confirm" copy="Promise resolves to true or false." onClick={handleConfirm} />
-            <ExampleCard title="Stacked flow" copy="Open sequential modals from async control flow." onClick={handleStack} />
-            <ExampleCard title="AbortController" copy="Automatically closes after three seconds." onClick={handleAbort} />
+            <ExampleCard
+              title="Sequential flow"
+              copy="Replace the top modal without dropping the layer."
+              onClick={handleSequential}
+            />
+            <ExampleCard
+              title="AbortController"
+              copy="Automatically closes after three seconds."
+              onClick={handleAbort}
+            />
             <ExampleCard title="Prompt" copy="Collect typed text from a custom modal." onClick={handlePrompt} />
           </div>
 
@@ -222,7 +221,7 @@ export function Confirm({ message }: ConfirmProps) {
         <section id="manager-api" className="section split-section">
           <div className="section-heading">
             <p className="eyebrow">Open with manager</p>
-            <h2>Call modal.open from the code that needs a decision.</h2>
+            <h2>open() from the code wherever you want.</h2>
             <p>
               <code>modal.open()</code> returns a promise, so modal flows can stay in the same async control flow as the
               action that triggered them.
@@ -238,6 +237,44 @@ export async function deleteItem() {
 
   if (!confirmed) return;
   await requestDelete();
+}`}</CodeBlock>
+        </section>
+
+        <section id="smooth-sequential-flow" className="section split-section">
+          <div className="section-heading">
+            <p className="eyebrow">Smooth sequential flow</p>
+            <h2>Replace modals without flickering.</h2>
+            <p>
+              Use <code>replaceSelf()</code> when one modal step should become the next step in the same flow. The
+              current layer stays mounted, so the dim layer remains stable while the content closes and the next modal
+              opens.
+            </p>
+          </div>
+          <CodeBlock>{`import { useModalInstance } from '@reactleaf/modal';
+import { modal } from './modal';
+import { EmailModal } from './modals/EmailModal';
+import { CodeModal } from './modals/CodeModal';
+
+export function verifyEmail() {
+  void modal.open(EmailModal, {
+    onVerified: completeSignIn,
+  });
+}
+
+function EmailModal({ onVerified }) {
+  const { replaceSelf } = useModalInstance();
+
+  async function submitEmail(email) {
+    await sendVerificationCode(email);
+
+    const verified = await replaceSelf(CodeModal, {
+      email,
+    });
+
+    if (verified) {
+      await onVerified();
+    }
+  }
 }`}</CodeBlock>
         </section>
       </main>
@@ -288,19 +325,23 @@ function highlightCode(code: string): React.ReactNode[] {
     }
 
     const token = match[0];
-    if (token === '>' && code[match.index - 1] === '=') {
+    if (token === ">" && code[match.index - 1] === "=") {
       nodes.push(token);
       lastIndex = match.index + token.length;
       continue;
     }
 
-    const className =
-      match[1] ? 'tok-comment'
-        : match[2] ? 'tok-string'
-          : match[3] ? 'tok-keyword'
-            : match[4] ? 'tok-tag'
-              : match[5] ? 'tok-type'
-                : 'tok-number';
+    const className = match[1]
+      ? "tok-comment"
+      : match[2]
+        ? "tok-string"
+        : match[3]
+          ? "tok-keyword"
+          : match[4]
+            ? "tok-tag"
+            : match[5]
+              ? "tok-type"
+              : "tok-number";
 
     nodes.push(
       <span className={className} key={`${match.index}-${token}`}>
@@ -317,10 +358,10 @@ function highlightCode(code: string): React.ReactNode[] {
   return nodes;
 }
 
-const root = document.querySelector('#root');
+const root = document.querySelector("#root");
 
 if (!root) {
-  throw new Error('Root element was not found.');
+  throw new Error("Root element was not found.");
 }
 
 createRoot(root).render(

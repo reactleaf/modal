@@ -24,6 +24,6 @@
   transform: translateY(8px) scale(0.98);
   transition: transform 180ms ease;
 }
-.modal-layer.visible > * {
+.modal-layer[data-content-visible="true"] > * {
   transform: translateY(0) scale(1);
 }

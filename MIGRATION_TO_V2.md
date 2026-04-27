@@ -82,7 +82,7 @@ function App() {
     <ModalProvider
       manager={modal}
       defaultLayerOptions={{ closeOnOutsideClick: true }}
-      stackOptions={{ shade: true, preventScroll: true }}
+      rootOptions={{ preventScroll: true }}
     >
       <YourApp />
     </ModalProvider>
@@ -225,7 +225,7 @@ Options are merged in this order:
 <ModalProvider
   manager={modal}
   defaultLayerOptions={{ closeOnOutsideClick: true }}
-  stackOptions={{ shade: true, preventScroll: true }}
+  rootOptions={{ preventScroll: true }}
 >
   <App />
 </ModalProvider>

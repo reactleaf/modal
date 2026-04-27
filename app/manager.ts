@@ -8,11 +8,17 @@ import {
   ModalOptions,
   ModalState,
   PropsAreOptional,
+  ReplaceRequestListener,
 } from './types';
 
-type ModalEntry = ModalState & {
+type ModalEntry = {
+  id: string;
+  Component: React.ComponentType<Record<string, unknown>>;
+  props?: unknown;
+  options: ModalOptions;
   disposeAbortListener?: () => void;
   close: (value?: unknown, options?: CloseOptions) => void;
+  settle: (value?: unknown) => void;
 };
 
 type PendingProgrammaticBack = {
@@ -22,7 +28,10 @@ type PendingProgrammaticBack = {
 
 const HISTORY_STATE_KEY = '__reactleafModal';
 export const MODAL_ABORTED: unique symbol = Symbol.for('@reactleaf/modal/aborted');
+export const MODAL_REPLACED: unique symbol = Symbol.for('@reactleaf/modal/replaced');
 export type ModalAborted = typeof MODAL_ABORTED;
+export type ModalReplaced = typeof MODAL_REPLACED;
+export type ModalClosedSignal = ModalAborted | ModalReplaced;
 
 function createModalHistoryState(id: string) {
   return {
@@ -46,6 +55,8 @@ export default class ModalManager {
   private modalStack: ModalEntry[] = [];
   private listeners: ModalListener[] = [];
   private closeRequestListener: CloseRequestListener | null = null;
+  private replaceRequestListener: ReplaceRequestListener | null = null;
+  private pendingReplacements = new Map<string, ModalEntry>();
   private pendingCloseHistories = new Map<string, Promise<void>>();
   private idCounter = 0;
   private pendingProgrammaticBacks: PendingProgrammaticBack[] = [];
@@ -61,62 +72,79 @@ export default class ModalManager {
     this.listeners.forEach((listener) => listener([...snapshot]));
   }
 
+  private createModalEntry<Props, Result>(
+    id: string,
+    Component: ModalComponent<Props>,
+    props: Props | null | undefined,
+    options: ModalOptions | undefined,
+    resolve: (value: Result | ModalClosedSignal | undefined) => void,
+    onAbort?: () => void,
+  ): ModalEntry {
+    const finalOptions = { ...Component?.layerOptions, ...options };
+
+    const closeModal = (result?: unknown, closeOptions?: CloseOptions) => {
+      const historySettled = this.prepareClose(id, closeOptions);
+
+      this.removeById(id, () => {
+        void historySettled.then(() => resolve(result as Result | ModalClosedSignal | undefined));
+      });
+    };
+
+    let disposeAbortListener: (() => void) | undefined;
+    if (finalOptions.abortController) {
+      const handleAbort = () => {
+        if (onAbort) {
+          onAbort();
+          return;
+        }
+
+        this.closeWithResult(id, MODAL_ABORTED);
+      };
+
+      finalOptions.abortController.signal.addEventListener('abort', handleAbort, { once: true });
+      disposeAbortListener = () => {
+        finalOptions.abortController?.signal.removeEventListener('abort', handleAbort);
+      };
+    }
+
+    return {
+      id,
+      Component: Component as React.ComponentType<Record<string, unknown>>,
+      props,
+      options: finalOptions,
+      disposeAbortListener,
+      close: closeModal,
+      settle: (value) => resolve(value as Result | ModalClosedSignal | undefined),
+    };
+  }
+
   open<Props, Result = unknown>(
     Component: PropsAreOptional<Props> extends true ? ModalComponent<Props> : never,
     props?: Props | null,
     options?: ModalOptions,
-  ): Promise<Result | ModalAborted | undefined>;
+  ): Promise<Result | ModalClosedSignal | undefined>;
 
   open<Props, Result = unknown>(
     Component: PropsAreOptional<Props> extends true ? never : ModalComponent<Props>,
     props: Props,
     options?: ModalOptions,
-  ): Promise<Result | ModalAborted | undefined>;
+  ): Promise<Result | ModalClosedSignal | undefined>;
 
   open<Props, Result = unknown>(
     Component: ModalComponent<Props>,
     props?: Props | null,
     options?: ModalOptions,
-  ): Promise<Result | ModalAborted | undefined> {
-    return new Promise<Result | ModalAborted | undefined>((resolve) => {
+  ): Promise<Result | ModalClosedSignal | undefined> {
+    return new Promise<Result | ModalClosedSignal | undefined>((resolve) => {
       const id = this.generateId();
-      const finalOptions = { ...Component?.layerOptions, ...options };
-      let disposeAbortListener: (() => void) | undefined;
 
-      if (finalOptions.abortController?.signal.aborted) {
+      if (options?.abortController?.signal.aborted) {
         resolve(MODAL_ABORTED);
         return;
       }
 
-      const closeModal = (result?: Result, closeOptions?: CloseOptions) => {
-        const historySettled = this.prepareClose(id, closeOptions);
-
-        this.removeById(id, () => {
-          void historySettled.then(() => resolve(result));
-        });
-      };
-
-      if (finalOptions.abortController) {
-        const handleAbort = () => {
-          this.closeWithResult(id, MODAL_ABORTED);
-        };
-
-        finalOptions.abortController.signal.addEventListener('abort', handleAbort, { once: true });
-        disposeAbortListener = () => {
-          finalOptions.abortController?.signal.removeEventListener('abort', handleAbort);
-        };
-      }
-
-      const modalState = {
-        id,
-        Component: Component as React.ComponentType<Record<string, unknown>>,
-        props,
-        options: finalOptions,
-        disposeAbortListener,
-        close: closeModal,
-      };
-
-      this.modalStack.push(modalState as ModalEntry);
+      const modalEntry = this.createModalEntry(id, Component, props, options, resolve);
+      this.modalStack.push(modalEntry);
 
       if (typeof window !== 'undefined') {
         window.history.pushState(createModalHistoryState(id), '', window.location.href);
@@ -126,17 +154,92 @@ export default class ModalManager {
     });
   }
 
+  /** @internal Used by ModalProvider to replace a specific modal layer from useModalInstance(). */
+  replaceById<Props, Result = unknown>(
+    id: string,
+    Component: PropsAreOptional<Props> extends true ? ModalComponent<Props> : never,
+    props?: Props | null,
+    options?: ModalOptions,
+  ): Promise<Result | ModalClosedSignal | undefined>;
+
+  replaceById<Props, Result = unknown>(
+    id: string,
+    Component: PropsAreOptional<Props> extends true ? never : ModalComponent<Props>,
+    props: Props,
+    options?: ModalOptions,
+  ): Promise<Result | ModalClosedSignal | undefined>;
+
+  /** @internal Used by ModalProvider to replace a specific modal layer from useModalInstance(). */
+  replaceById<Props, Result = unknown>(
+    id: string,
+    Component: ModalComponent<Props>,
+    props?: Props | null,
+    options?: ModalOptions,
+  ): Promise<Result | ModalClosedSignal | undefined> {
+    const currentModal = this.modalStack.find((modal) => modal.id === id);
+    if (!currentModal) {
+      return Promise.resolve(MODAL_REPLACED);
+    }
+
+    return this.replaceExisting(currentModal, Component, props, options);
+  }
+
+  private replaceExisting<Props, Result = unknown>(
+    currentModal: ModalEntry,
+    Component: ModalComponent<Props>,
+    props?: Props | null,
+    options?: ModalOptions,
+  ): Promise<Result | ModalClosedSignal | undefined> {
+    return new Promise<Result | ModalClosedSignal | undefined>((resolve) => {
+      if (options?.abortController?.signal.aborted) {
+        resolve(MODAL_ABORTED);
+        return;
+      }
+
+      let nextModal!: ModalEntry;
+      nextModal = this.createModalEntry(currentModal.id, Component, props, options, resolve, () => {
+        if (this.pendingReplacements.get(currentModal.id) !== nextModal) return;
+
+        this.pendingReplacements.delete(currentModal.id);
+        nextModal.disposeAbortListener?.();
+        nextModal.settle(MODAL_ABORTED);
+      });
+      this.pendingReplacements.set(currentModal.id, nextModal);
+
+      const request = {
+        id: currentModal.id,
+        next: this.toModalState(nextModal),
+      };
+
+      if (this.replaceRequestListener?.(request)) {
+        return;
+      }
+
+      this.completeReplace(currentModal.id);
+    });
+  }
+
   private removeById(id: string, onRemoved?: () => void): boolean {
     const modalIndex = this.modalStack.findIndex((modal) => modal.id === id);
     if (modalIndex === -1) return false;
 
     const [removedModal] = this.modalStack.splice(modalIndex, 1);
     removedModal?.disposeAbortListener?.();
+    this.pendingReplacements.delete(id);
     this.pendingCloseHistories.delete(id);
     onRemoved?.();
 
     this.notifyListeners();
     return true;
+  }
+
+  private toModalState({ id, Component, props, options }: ModalEntry): ModalState {
+    return {
+      id,
+      Component,
+      props: props as Record<string, unknown> | undefined,
+      options,
+    };
   }
 
   /** @internal Starts history reconciliation for a close request without removing the modal yet. */
@@ -222,6 +325,22 @@ export default class ModalManager {
     return true;
   }
 
+  /** @internal Used by ModalProvider after it handles a replace request. */
+  completeReplace(id: string): boolean {
+    const modalIndex = this.modalStack.findIndex((modal) => modal.id === id);
+    const nextModal = this.pendingReplacements.get(id);
+    if (modalIndex === -1 || !nextModal) return false;
+
+    const previousModal = this.modalStack[modalIndex];
+    previousModal?.disposeAbortListener?.();
+    previousModal?.settle(MODAL_REPLACED);
+
+    this.modalStack[modalIndex] = nextModal;
+    this.pendingReplacements.delete(id);
+    this.notifyListeners();
+    return true;
+  }
+
   close(id: string, options?: CloseOptions): boolean {
     return this.closeWithResult(id, undefined, options);
   }
@@ -243,7 +362,7 @@ export default class ModalManager {
     return this.modalStack.map(({ id, Component, props, options }) => ({
       id,
       Component,
-      props,
+      props: props as Record<string, unknown> | undefined,
       options,
     }));
   }
@@ -271,6 +390,17 @@ export default class ModalManager {
     return () => {
       if (this.closeRequestListener === listener) {
         this.closeRequestListener = null;
+      }
+    };
+  }
+
+  /** @internal Used by ModalProvider to own UI replace transitions. */
+  setReplaceRequestListener(listener: ReplaceRequestListener): () => void {
+    this.replaceRequestListener = listener;
+
+    return () => {
+      if (this.replaceRequestListener === listener) {
+        this.replaceRequestListener = null;
       }
     };
   }

@@ -15,7 +15,7 @@ React 코드 어디에서나 모달 컴포넌트를 직접 열고, 닫힐 때의
 
 `@reactleaf/modal` v2는 v1의 register 기반 구조를 제거하고, 모달 컴포넌트를 직접 전달하는 방식으로 동작합니다.
 
-앱에서 `ModalManager` 인스턴스를 하나 만들고, 그 인스턴스를 `ModalProvider`에 연결한 뒤, 필요한 곳에서 `modal.open(Component, props, options)`를 호출합니다. 모달 내부에서는 `useModalInstance()`로 현재 모달의 표시 상태와 자기 자신을 닫는 함수를 가져옵니다.
+앱에서 `ModalManager` 인스턴스를 하나 만들고, 그 인스턴스를 `ModalProvider`에 연결한 뒤, 필요한 곳에서 `modal.open(Component, props, options)`를 호출합니다. 모달 내부에서는 `useModalInstance()`로 현재 모달의 표시 상태, 자기 자신을 닫는 함수, 자기 자신을 다음 모달로 교체하는 함수를 가져옵니다.
 
 ### 해결하려던 문제들
 
@@ -29,7 +29,7 @@ React 코드 어디에서나 모달 컴포넌트를 직접 열고, 닫힐 때의
 - 문자열 기반 모달 이름 대신 컴포넌트를 직접 전달합니다.
 - `BasicModalProps`가 제거되었습니다.
 - `modal.open(Component, props?, options?)`는 모달이 닫힐 때 resolve되는 `Promise`를 반환합니다.
-- 모달 컴포넌트는 `useModalInstance()`로 `visible`과 `closeSelf`를 읽습니다.
+- 모달 컴포넌트는 `useModalInstance()`로 `visible`, `closeSelf`, `replaceSelf`를 읽습니다.
 
 ## 설치
 
@@ -73,7 +73,7 @@ function App() {
     <ModalProvider
       manager={modal}
       defaultLayerOptions={{ closeDelay: 180, closeOnOutsideClick: true, dim: true }}
-      stackOptions={{ preventScroll: true }}
+      rootOptions={{ preventScroll: true }}
     >
       <YourApp />
     </ModalProvider>
@@ -151,7 +151,7 @@ export const modal = new ModalManager();
 <ModalProvider
   manager={modal}
   defaultLayerOptions={{ closeDelay: 180, dim: true }}
-  stackOptions={{ preventScroll: true }}
+  rootOptions={{ preventScroll: true }}
 >
   <App />
 </ModalProvider>
@@ -161,7 +161,7 @@ Props:
 
 - `manager: ModalManager`
 - `defaultLayerOptions?: Partial<LayerOptions>`
-- `stackOptions?: Partial<StackOptions>`
+- `rootOptions?: Partial<RootOptions>`
 - `children: React.ReactNode`
 
 ### `modal.open(Component, props?, options?)`
@@ -181,7 +181,7 @@ await modal.open(EmptyModal);
 await modal.open(EmptyModal, null, { closeOnOutsideClick: false });
 ```
 
-결과 타입을 명시하고 싶을 때는 두 번째 제네릭 인자를 사용합니다. 실제 반환 타입에는 사용자 지정 결과 타입에 더해 `ModalAborted | undefined`가 포함될 수 있습니다.
+결과 타입을 명시하고 싶을 때는 두 번째 제네릭 인자를 사용합니다. 실제 반환 타입에는 사용자 지정 결과 타입에 더해 `ModalAborted | ModalReplaced | undefined`가 포함될 수 있습니다.
 
 ```ts
 const name = await modal.open<PromptProps, string | null>(Prompt, {
@@ -200,6 +200,8 @@ Resolve 결과는 다음과 같습니다:
   - `modal.close(id)` / `modal.closeTop()` / `modal.closeAll()` -> `undefined`
 - 별도의 Abort Controller를 통해 닫는 경우
   - `abortController.abort()` -> `MODAL_ABORTED`
+- `replaceSelf(...)`로 교체되는 경우
+  - 교체되는 이전 모달의 `open()` Promise -> `MODAL_REPLACED`
 
 ### `modal.closeWithResult(id, result, options?)`
 
@@ -279,15 +281,43 @@ unsubscribe();
 모달 컴포넌트 내부에서 현재 모달 인스턴스의 상태와 닫기 함수를 읽습니다.
 
 ```tsx
-const { visible, closeSelf } = useModalInstance();
+const { visible, closeSelf, replaceSelf } = useModalInstance();
 ```
 
 제공 값:
 
 - `visible: boolean`
 - `closeSelf(result?): Promise<void>`
+- `replaceSelf(Component, props?, options?): Promise`
 
 `useModalInstance()`는 컨텍스트를 사용하므로, `modal.open(...)`으로 열린 모달 컴포넌트 안에서만 사용할 수 있습니다.
+
+### `replaceSelf(Component, props?, options?)`
+
+현재 모달 인스턴스의 layer를 유지한 채 content만 새 모달로 교체합니다.
+
+```tsx
+import { useModalInstance } from '@reactleaf/modal';
+import { CodeModal } from './CodeModal';
+
+function EmailModal({ onVerified }: EmailModalProps) {
+  const { replaceSelf } = useModalInstance();
+
+  async function submitEmail(email: string) {
+    await sendVerificationCode(email);
+
+    const verified = await replaceSelf<CodeModalProps, boolean>(CodeModal, {
+      email,
+    });
+
+    if (verified) {
+      await onVerified();
+    }
+  }
+}
+```
+
+`replaceSelf(...)`는 새 모달이 닫힐 때 그 결과로 resolve됩니다. 교체되는 이전 모달의 `open()` Promise는 `MODAL_REPLACED`로 resolve됩니다.
 
 ## 모달 옵션
 
@@ -299,7 +329,7 @@ export interface LayerOptions {
   dim?: boolean | string;
 }
 
-export interface StackOptions {
+export interface RootOptions {
   preventScroll?: boolean;
 }
 
@@ -414,7 +444,7 @@ window.addEventListener('error', () => {
 
 ## 애니메이션
 
-모달 레이어는 마운트 직후 한 프레임 뒤에 `visible` 상태가 됩니다. 열림 애니메이션은 `.modal-layer.visible` 또는 모달 내부의 `visible` 값을 사용해 구현할 수 있습니다.
+모달 레이어는 마운트 직후 한 프레임 뒤에 `visible` 상태가 됩니다. 레이어의 dim fade는 `.modal-layer.visible`로, 모달 content의 열림/닫힘 애니메이션은 `.modal-layer[data-content-visible="true"]`로 구현할 수 있습니다.
 
 닫힘 애니메이션이 필요하면 `closeDelay`를 CSS transition 시간과 맞춥니다.
 
@@ -436,6 +466,15 @@ window.addEventListener('error', () => {
 .modal-layer.visible {
   opacity: 1;
 }
+
+.modal-layer > * {
+  transform: translateY(8px) scale(0.98);
+  transition: transform 180ms ease;
+}
+
+.modal-layer[data-content-visible="true"] > * {
+  transform: translateY(0) scale(1);
+}
 ```
 
 모달 내부 UI에도 같은 상태를 사용할 수 있습니다.
@@ -450,7 +489,7 @@ const { visible } = useModalInstance();
 - 브라우저 뒤로가기를 누르면 가장 위의 모달이 닫힙니다.
 - `closeOnOutsideClick`을 `false`로 설정하지 않으면 최상위 모달의 바깥 영역 클릭으로 닫힙니다.
 - 여러 모달은 열린 순서대로 stack에 쌓입니다.
-- `stackOptions.preventScroll`이 `true`이면 모달이 열려 있는 동안 body scroll을 막습니다.
+- `rootOptions.preventScroll`이 `true`이면 모달이 열려 있는 동안 body scroll을 막습니다.
 - `dim`이 `true`이면 해당 모달 layer에 `dim` class를 추가합니다.
 - `dim`에 문자열을 전달하면 해당 문자열을 모달 layer의 custom dim class로 추가합니다.
 
@@ -466,6 +505,7 @@ import '@reactleaf/modal/style.css';
 
 - `.modal-layer`
 - `.modal-layer.visible`
+- `.modal-layer[data-content-visible="true"]`
 - `.modal-layer.dim`
 
 ```css
@@ -479,7 +519,7 @@ import '@reactleaf/modal/style.css';
   background: rgba(0, 0, 0, 0.6);
 }
 
-.modal-layer.visible > * {
+.modal-layer[data-content-visible="true"] > * {
   transform: translateY(0) scale(1);
 }
 ```
@@ -495,6 +535,41 @@ await modal.open(Confirm, { message: '진행할까요?' }, { className: 'danger-
 ```ts
 await modal.open(Confirm, { message: '진행할까요?' }, { dim: 'danger-dim' });
 ```
+
+## Smooth Sequential Flow
+
+`replaceSelf(...)`를 사용하면 현재 모달의 layer와 dim을 유지한 채 content만 다음 모달로 교체할 수 있습니다. 이메일 입력 후 인증번호 입력으로 넘어가는 것처럼 한 흐름 안에서 단계가 바뀌는 UI에 적합합니다.
+
+```tsx
+import { useModalInstance } from '@reactleaf/modal';
+import { modal } from './modal';
+import { CodeModal, type CodeModalProps } from './CodeModal';
+import { EmailModal, type EmailModalProps } from './EmailModal';
+
+function startEmailVerification() {
+  void modal.open<EmailModalProps, never>(EmailModal, {
+    onVerified: completeSignIn,
+  });
+}
+
+function EmailModal({ onVerified }: EmailModalProps) {
+  const { replaceSelf } = useModalInstance();
+
+  async function submitEmail(email: string) {
+    await sendVerificationCode(email);
+
+    const verified = await replaceSelf<CodeModalProps, boolean>(CodeModal, {
+      email,
+    });
+
+    if (verified) {
+      await onVerified();
+    }
+  }
+}
+```
+
+이전 모달의 `open()` Promise는 `MODAL_REPLACED`로 resolve되고, `replaceSelf()`가 반환한 Promise는 새 모달의 결과로 resolve됩니다. replace 중에는 layer가 유지되므로 dim이 사라졌다가 다시 나타나지 않고, content만 닫힌 뒤 새 content가 열립니다.
 
 ## 동작 예제
 

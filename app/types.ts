@@ -7,7 +7,7 @@ export interface LayerOptions {
   dim?: boolean | string;
 }
 
-export interface StackOptions {
+export interface RootOptions {
   preventScroll?: boolean;
 }
 
@@ -28,6 +28,13 @@ export interface CloseRequest {
 }
 
 export type CloseRequestListener = (request: CloseRequest) => boolean;
+
+export interface ReplaceRequest {
+  id: string;
+  next: ModalState;
+}
+
+export type ReplaceRequestListener = (request: ReplaceRequest) => boolean;
 
 // getSnapshot() / subscribe()로 노출되는 모달 엔트리(내부 close 핸들러는 포함하지 않음)
 export interface ModalState<TComponent extends React.ComponentType = React.ComponentType> {

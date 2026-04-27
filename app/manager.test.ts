@@ -1,4 +1,4 @@
-import ModalManager, { MODAL_ABORTED } from './manager';
+import ModalManager, { MODAL_ABORTED, MODAL_REPLACED } from './manager';
 import type { LayerOptions, ModalComponent } from './types';
 
 function installWindowMock() {
@@ -341,6 +341,48 @@ test('open merges Component.layerOptions with call options (later wins)', () => 
   const [entry] = manager.getSnapshot();
   expect(entry?.options).toEqual(
     expect.objectContaining({
+      closeOnOutsideClick: true,
+    }),
+  );
+});
+
+test('replaceById with unknown id resolves with MODAL_REPLACED and does not open a modal', async () => {
+  const manager = new ModalManager();
+  await expect(manager.replaceById('nonexistent', Required, { message: 'hi' })).resolves.toBe(MODAL_REPLACED);
+  expect(manager.getSnapshot()).toHaveLength(0);
+});
+
+test('replaceById keeps layer id and resolves previous modal with MODAL_REPLACED', async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pushState = (globalThis as any).window.history.pushState as jest.Mock;
+  const manager = new ModalManager();
+  const previous = manager.open(Required, { message: 'before' });
+  const previousId = manager.getSnapshot()[0]!.id;
+
+  const next = manager.replaceById(previousId, Empty);
+
+  expect(pushState).toHaveBeenCalledTimes(1);
+  expect(manager.getSnapshot()).toHaveLength(1);
+  expect(manager.getSnapshot()[0]?.id).toBe(previousId);
+  expect(manager.getSnapshot()[0]?.Component).toBe(Empty);
+  await expect(previous).resolves.toBe(MODAL_REPLACED);
+
+  manager.closeWithResult(previousId, 'after');
+  await expect(next).resolves.toBe('after');
+});
+
+test('replaceById recalculates options from replacement component and call options', () => {
+  const previousComponent = componentWithLayerOptions({ dim: 'old-dim', closeOnOutsideClick: false });
+  const nextComponent = componentWithLayerOptions({ dim: 'next-dim', closeOnOutsideClick: false });
+  const manager = new ModalManager();
+  void manager.open(previousComponent);
+  const id = manager.getSnapshot()[0]!.id;
+
+  void manager.replaceById(id, nextComponent, null, { closeOnOutsideClick: true });
+
+  expect(manager.getSnapshot()[0]?.options).toEqual(
+    expect.objectContaining({
+      dim: 'next-dim',
       closeOnOutsideClick: true,
     }),
   );
