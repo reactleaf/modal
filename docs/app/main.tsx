@@ -117,7 +117,7 @@ function App() {
             </div>
           </div>
 
-          <CodeBlock ariaLabel="Quick example">{`const modal = new ModalManager();
+          <CodeBlock ariaLabel="Quick example">{`import { modal } from './modal';
 
 const confirmed = await modal.open(Confirm, {
   message: 'Delete this item?',

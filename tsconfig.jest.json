@@ -4,5 +4,6 @@
     "noEmit": true,
     "types": ["jest", "node"]
   },
-  "include": ["app/**/*.test.ts", "app/**/*.ts", "app/**/*.tsx"]
+  "include": ["app/**/*.test.ts", "app/**/*.ts", "app/**/*.tsx"],
+  "exclude": []
 }

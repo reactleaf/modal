@@ -24,7 +24,6 @@ interface Props {
 export function ModalProvider({ manager, defaultLayerOptions, stackOptions, children }: Props) {
   const [modalStack, setModalStack] = useState<ModalState[]>([]);
   const [closeRequests, setCloseRequests] = useState<Record<string, CloseRequest>>({});
-  const [modalVisibility, setModalVisibility] = useState<Record<string, boolean>>({});
   const finalStackOptions = getFinalStackOptions(stackOptions);
   const shouldPreventScroll = modalStack.length > 0 && finalStackOptions.preventScroll;
   const topModal = modalStack[modalStack.length - 1];
@@ -93,12 +92,6 @@ export function ModalProvider({ manager, defaultLayerOptions, stackOptions, chil
             closeRequest={closeRequests[modal.id]}
             isTop={modal.id === topModal?.id}
             stackIndex={index}
-            onVisibleChange={(nextVisible) => {
-              setModalVisibility((prev) => {
-                if (prev[modal.id] === nextVisible) return prev;
-                return { ...prev, [modal.id]: nextVisible };
-              });
-            }}
             onCloseRequestHandled={() => {
               setCloseRequests((prev) => {
                 const { [modal.id]: _handledRequest, ...next } = prev;
@@ -135,7 +128,6 @@ interface LayerProps {
   closeRequest: CloseRequest | undefined;
   isTop: boolean;
   stackIndex: number;
-  onVisibleChange: (visible: boolean) => void;
   onCloseRequestHandled: () => void;
 }
 
@@ -146,7 +138,6 @@ function ModalLayer({
   closeRequest,
   isTop,
   stackIndex,
-  onVisibleChange,
   onCloseRequestHandled,
 }: LayerProps) {
   const [visible, setVisible] = useState(false);
@@ -155,10 +146,6 @@ function ModalLayer({
   useEffect(() => {
     void window.requestAnimationFrame(() => setVisible(true));
   }, []);
-
-  useEffect(() => {
-    onVisibleChange(visible);
-  }, [visible, onVisibleChange]);
 
   const finalOptions = getFinalLayerOptions(modal, layerOptions);
 
