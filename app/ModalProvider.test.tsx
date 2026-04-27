@@ -208,6 +208,53 @@ test("preventScroll: false does not change body overflow", async () => {
   expect(document.body.style.overflow).toBe("auto");
 });
 
+test("unmounting ModalProvider restores body overflow when preventScroll was active", () => {
+  mockHistoryChain();
+  document.body.style.overflow = "clip";
+  const manager = new ModalManager();
+
+  const { unmount } = render(
+    <ModalProvider manager={manager} stackOptions={{ preventScroll: true }}>
+      <span>app</span>
+    </ModalProvider>,
+  );
+
+  act(() => {
+    void manager.open(TestModal);
+  });
+  expect(document.body.style.overflow).toBe("hidden");
+
+  unmount();
+  expect(document.body.style.overflow).toBe("clip");
+});
+
+test("shade: false keeps manager stack and modal layers in sync through open and close", async () => {
+  mockHistoryChain();
+  const manager = new ModalManager();
+
+  render(
+    <ModalProvider manager={manager} stackOptions={{ shade: false }}>
+      <span>app</span>
+    </ModalProvider>,
+  );
+
+  expect(document.querySelector(".modal-shade")).toBeNull();
+
+  const p = actOpenTestModal(manager);
+  await waitFor(() => expect(manager.getSnapshot()).toHaveLength(1));
+  expect(document.querySelectorAll(".modal-layer")).toHaveLength(1);
+
+  const id = manager.getSnapshot()[0]!.id;
+  await act(async () => {
+    manager.closeWithResult(id, "bye");
+  });
+  await flushClosePipeline(manager);
+
+  expect(manager.getSnapshot()).toHaveLength(0);
+  expect(document.querySelectorAll(".modal-layer")).toHaveLength(0);
+  await expect(p).resolves.toBe("bye");
+});
+
 test("closeOnOutsideClick: true closes when clicking the modal layer backdrop", async () => {
   mockHistoryChain();
   const manager = new ModalManager();
@@ -346,6 +393,56 @@ test("closeDelay > 0: layer loses visible before stack clears; stack clears afte
   await settleHistoryCloseViaPopstate();
 
   expect(manager.hasOpenModals()).toBe(false);
+
+  jest.useRealTimers();
+});
+
+test("closeDelay > 0: visible off then delayed close; prepareClose reaches manager via PopStateEvent", async () => {
+  mockHistoryChain();
+  jest.useFakeTimers();
+  jest.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+    cb(0);
+    return 0;
+  });
+
+  const handlePopStateSpy = jest.spyOn(ModalManager.prototype, "handlePopState");
+
+  const manager = new ModalManager();
+
+  render(
+    <ModalProvider manager={manager} defaultLayerOptions={{ closeDelay: 60 }}>
+      <span>app</span>
+    </ModalProvider>,
+  );
+
+  const p = actOpenTestModal(manager);
+  const layer = document.querySelector(".modal-layer.is-top");
+  expect(layer).toBeTruthy();
+  expect(layer?.classList.contains("visible")).toBe(true);
+
+  const handlePopStateCallsAfterOpen = handlePopStateSpy.mock.calls.length;
+
+  const id = manager.getSnapshot()[0]!.id;
+  await act(async () => {
+    manager.closeWithResult(id, "delayed");
+  });
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  // prepareClose → history.back() → mock dispatches PopStateEvent → ModalProvider → handlePopState(event.state)
+  expect(handlePopStateSpy.mock.calls.length).toBeGreaterThan(handlePopStateCallsAfterOpen);
+
+  expect(manager.hasOpenModals()).toBe(true);
+  expect(layer?.classList.contains("visible")).toBe(false);
+
+  await act(async () => {
+    jest.advanceTimersByTime(60);
+  });
+  await settleHistoryCloseViaPopstate();
+
+  expect(manager.hasOpenModals()).toBe(false);
+  await expect(p).resolves.toBe("delayed");
 
   jest.useRealTimers();
 });
