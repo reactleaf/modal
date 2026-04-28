@@ -1,11 +1,11 @@
-import type { LayerOptions, ModalState, RootOptions } from './types';
+import type { LayerOptions, ModalState, RootOptions } from "./types";
 
-export const DEFAULT_LAYER_OPTIONS: LayerOptions = {
+const DEFAULT_LAYER_OPTIONS: LayerOptions = {
   closeDelay: 0,
   dim: true,
 };
 
-export const DEFAULT_ROOT_OPTIONS: Required<RootOptions> = {
+const DEFAULT_ROOT_OPTIONS: Required<RootOptions> = {
   preventScroll: true,
 };
 
@@ -28,8 +28,8 @@ export function mergeModalLayerOptions(
   };
 }
 
-export function dimClassName(dim: LayerOptions['dim']): string | undefined {
-  if (dim === true) return 'dim';
-  if (typeof dim === 'string') return dim;
+export function dimClassName(dim: LayerOptions["dim"]): string | undefined {
+  if (dim === true) return "dim";
+  if (typeof dim === "string") return dim;
   return undefined;
 }

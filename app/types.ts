@@ -49,14 +49,10 @@ export type CloseRequestListener = (request: CloseRequest) => boolean;
 
 export interface ReplaceRequest {
   id: string;
-  next: ModalState;
 }
 
 export type ReplaceRequestListener = (request: ReplaceRequest) => boolean;
 
-/* Utility types ------------------------------------------------------------ */
-
-export type Equals<X, Y> = (() => Y extends X ? 1 : 2) extends () => X extends Y ? 1 : 2 ? true : false;
 export type PropsAreOptional<Props> =
   [Props] extends [void] ? true
     : [Props] extends [undefined] ? true

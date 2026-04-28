@@ -11,7 +11,7 @@ export type ModalLayerTransitionRequest =
   | { type: "close"; request: CloseRequest }
   | { type: "replace"; request: ReplaceRequest };
 
-export interface ModalLayerProps {
+interface ModalLayerProps {
   manager: ModalManager;
   modal: ModalState;
   layerOptions: Partial<LayerOptions> | undefined;
@@ -30,7 +30,6 @@ export function ModalLayer({
 }: ModalLayerProps) {
   const [layerVisible, setLayerVisible] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
-  const isClosingRef = useRef(false);
   /** Serialize close/replace transitions per layer so overlapping requests are not dropped. */
   const transitionChainRef = useRef(Promise.resolve<void>(undefined));
   const finalOptions = mergeModalLayerOptions(modal, layerOptions);
@@ -78,7 +77,6 @@ export function ModalLayer({
     historySettled?: Promise<void>,
   ): Promise<void> {
     return scheduleTransition(async () => {
-      isClosingRef.current = true;
       setContentVisible(false);
       setLayerVisible(false);
 
@@ -87,20 +85,17 @@ export function ModalLayer({
 
       await Promise.all([animationSettled, finalHistorySettled]);
       manager.completeCloseWithResult(modal.id, result, { ...options, historyBack: true });
-      isClosingRef.current = false;
     });
   }
 
   function replaceWithTransition(): Promise<void> {
     return scheduleTransition(async () => {
-      isClosingRef.current = true;
       setContentVisible(false);
 
       await delayPromise(finalOptions.closeDelay || 0);
       manager.completeReplace(modal.id);
       await new Promise<void>((resolve) => {
         window.requestAnimationFrame(() => {
-          isClosingRef.current = false;
           setContentVisible(true);
           resolve();
         });

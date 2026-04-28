@@ -5,7 +5,7 @@ import type { ModalComponent, ModalOptions, PropsAreOptional } from './types';
 
 /* Instance API ------------------------------------------------------------- */
 
-export type CloseSelf = <T = unknown>(result?: T) => Promise<void>;
+type CloseSelf = <T = unknown>(result?: T) => Promise<void>;
 
 export type ReplaceSelf = {
   <Props, Result = unknown>(

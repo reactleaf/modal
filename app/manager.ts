@@ -43,8 +43,6 @@ export default class ModalManager {
   private idCounter = 0;
   private pendingProgrammaticBacks: PendingProgrammaticBack[] = [];
 
-  constructor() {}
-
   /* -------------------------------------------------------------------------- */
   /* Open / replace                                                             */
   /* -------------------------------------------------------------------------- */
@@ -361,12 +359,7 @@ export default class ModalManager {
       });
       this.pendingReplacements.set(currentModal.id, nextModal);
 
-      const request = {
-        id: currentModal.id,
-        next: this.toModalState(nextModal),
-      };
-
-      if (this.replaceRequestListener?.(request)) {
+      if (this.replaceRequestListener?.({ id: currentModal.id })) {
         return;
       }
 
@@ -396,15 +389,6 @@ export default class ModalManager {
 
     this.notifyListeners();
     return true;
-  }
-
-  private toModalState({ id, Component, props, options }: ModalEntry): ModalState {
-    return {
-      id,
-      Component,
-      props: props as Record<string, unknown> | undefined,
-      options,
-    };
   }
 
   private startHistoryBack(id: string, options?: CloseOptions): Promise<void> {
