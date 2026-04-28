@@ -42,10 +42,10 @@ export function ModalProvider({ manager, defaultLayerOptions, rootOptions, child
 
   useEffect(() => {
     return manager.setCloseRequestListener((request) => {
-      setCloseRequests((prev) => {
-        if (prev[request.id]) return prev;
-        return { ...prev, [request.id]: request };
-      });
+      setCloseRequests((prev) => ({
+        ...prev,
+        [request.id]: request,
+      }));
 
       return true;
     });
@@ -53,10 +53,10 @@ export function ModalProvider({ manager, defaultLayerOptions, rootOptions, child
 
   useEffect(() => {
     return manager.setReplaceRequestListener((request) => {
-      setReplaceRequests((prev) => {
-        if (prev[request.id]) return prev;
-        return { ...prev, [request.id]: request };
-      });
+      setReplaceRequests((prev) => ({
+        ...prev,
+        [request.id]: request,
+      }));
 
       return true;
     });
@@ -179,6 +179,17 @@ function ModalLayer({
   const [layerVisible, setLayerVisible] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
   const isClosingRef = useRef(false);
+  /** Serialize close/replace transitions per layer so overlapping requests are not dropped. */
+  const transitionChainRef = useRef(Promise.resolve<void>(undefined));
+
+  function scheduleTransition(run: () => Promise<void>): Promise<void> {
+    const scheduled = transitionChainRef.current.then(run);
+    transitionChainRef.current = scheduled.then(
+      () => undefined,
+      () => undefined,
+    );
+    return scheduled;
+  }
 
   useEffect(() => {
     void window.requestAnimationFrame(() => {
@@ -208,51 +219,53 @@ function ModalLayer({
     options?: CloseRequest["options"],
     historySettled?: Promise<void>,
   ): Promise<void> {
-    const delay = finalOptions.closeDelay || 0;
+    return scheduleTransition(async () => {
+      const delay = finalOptions.closeDelay || 0;
 
-    if (isClosingRef.current) return Promise.resolve();
+      isClosingRef.current = true;
+      setContentVisible(false);
+      setLayerVisible(false);
 
-    isClosingRef.current = true;
-    setContentVisible(false);
-    setLayerVisible(false);
+      const animationSettled =
+        delay > 0
+          ? new Promise<void>((resolve) => {
+              window.requestAnimationFrame(() => {
+                setTimeout(resolve, delay);
+              });
+            })
+          : Promise.resolve();
+      const finalHistorySettled = historySettled ?? manager.prepareClose(modal.id, options);
 
-    const animationSettled =
-      delay > 0
-        ? new Promise<void>((resolve) => {
-            window.requestAnimationFrame(() => {
-              setTimeout(resolve, delay);
-            });
-          })
-        : Promise.resolve();
-    const finalHistorySettled = historySettled || manager.prepareClose(modal.id, options);
-
-    return Promise.all([animationSettled, finalHistorySettled]).then(() => {
+      await Promise.all([animationSettled, finalHistorySettled]);
       manager.completeCloseWithResult(modal.id, result, { ...options, historyBack: true });
+      isClosingRef.current = false;
     });
   }
 
   function replaceWithTransition(): Promise<void> {
-    const delay = finalOptions.closeDelay || 0;
+    return scheduleTransition(async () => {
+      const delay = finalOptions.closeDelay || 0;
 
-    if (isClosingRef.current) return Promise.resolve();
+      isClosingRef.current = true;
+      setContentVisible(false);
 
-    isClosingRef.current = true;
-    setContentVisible(false);
+      const animationSettled =
+        delay > 0
+          ? new Promise<void>((resolve) => {
+              window.requestAnimationFrame(() => {
+                setTimeout(resolve, delay);
+              });
+            })
+          : Promise.resolve();
 
-    const animationSettled =
-      delay > 0
-        ? new Promise<void>((resolve) => {
-            window.requestAnimationFrame(() => {
-              setTimeout(resolve, delay);
-            });
-          })
-        : Promise.resolve();
-
-    return animationSettled.then(() => {
+      await animationSettled;
       manager.completeReplace(modal.id);
-      window.requestAnimationFrame(() => {
-        isClosingRef.current = false;
-        setContentVisible(true);
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => {
+          isClosingRef.current = false;
+          setContentVisible(true);
+          resolve();
+        });
       });
     });
   }

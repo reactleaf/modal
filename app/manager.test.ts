@@ -371,6 +371,27 @@ test('replaceById keeps layer id and resolves previous modal with MODAL_REPLACED
   await expect(next).resolves.toBe('after');
 });
 
+test('second replaceById before completeReplace supersedes first pending promise', async () => {
+  const manager = new ModalManager();
+  const unsetReplace = manager.setReplaceRequestListener(() => true);
+
+  void manager.open(Required, { message: 'a' });
+  const id = manager.getSnapshot()[0]!.id;
+
+  const pFirstPending = manager.replaceById(id, Empty);
+  const pSecondPending = manager.replaceById(id, Required, { message: 'b' });
+
+  await expect(pFirstPending).resolves.toBe(MODAL_REPLACED);
+
+  expect(manager.completeReplace(id)).toBe(true);
+  expect(manager.getSnapshot()[0]?.Component).toBe(Required);
+
+  manager.closeWithResult(id, 'done');
+  await expect(pSecondPending).resolves.toBe('done');
+
+  unsetReplace();
+});
+
 test('replaceById recalculates options from replacement component and call options', () => {
   const previousComponent = componentWithLayerOptions({ dim: 'old-dim', closeOnOutsideClick: false });
   const nextComponent = componentWithLayerOptions({ dim: 'next-dim', closeOnOutsideClick: false });

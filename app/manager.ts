@@ -184,6 +184,16 @@ export default class ModalManager {
     return this.replaceExisting(currentModal, Component, props, options);
   }
 
+  /** Pending replacement for `id` was never swapped in; supersede with MODAL_REPLACED and detach listeners. */
+  private supersedePendingReplacement(id: string): void {
+    const pending = this.pendingReplacements.get(id);
+    if (!pending) return;
+
+    pending.disposeAbortListener?.();
+    pending.settle(MODAL_REPLACED);
+    this.pendingReplacements.delete(id);
+  }
+
   private replaceExisting<Props, Result = unknown>(
     currentModal: ModalEntry,
     Component: ModalComponent<Props>,
@@ -195,6 +205,8 @@ export default class ModalManager {
         resolve(MODAL_ABORTED);
         return;
       }
+
+      this.supersedePendingReplacement(currentModal.id);
 
       let nextModal!: ModalEntry;
       nextModal = this.createModalEntry(currentModal.id, Component, props, options, resolve, () => {
