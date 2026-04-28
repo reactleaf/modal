@@ -3,6 +3,10 @@ import React, { createContext, useContext } from 'react';
 import type { ModalClosedSignal } from './manager';
 import type { ModalComponent, ModalOptions, PropsAreOptional } from './types';
 
+/* Instance API ------------------------------------------------------------- */
+
+export type CloseSelf = <T = unknown>(result?: T) => Promise<void>;
+
 export type ReplaceSelf = {
   <Props, Result = unknown>(
     Component: PropsAreOptional<Props> extends true ? ModalComponent<Props> : never,
@@ -17,37 +21,14 @@ export type ReplaceSelf = {
   ): Promise<Result | ModalClosedSignal | undefined>;
 };
 
-// 모달 인스턴스별 Context 타입
 export interface ModalInstanceContextType {
   visible: boolean;
-  closeSelf: <T = unknown>(result?: T) => Promise<void>;
+  closeSelf: CloseSelf;
   replaceSelf: ReplaceSelf;
 }
 
-// Context 생성
-export const ModalInstanceContext = createContext<ModalInstanceContextType | null>(null);
+const ModalInstanceContext = createContext<ModalInstanceContextType | null>(null);
 
-// 모달 인스턴스 Context Provider
-interface ModalInstanceProviderProps {
-  visible: boolean;
-  closeSelf: <T = unknown>(result?: T) => Promise<void>;
-  replaceSelf: ReplaceSelf;
-}
-
-export const ModalInstanceProvider = ({
-  children,
-  visible,
-  closeSelf,
-  replaceSelf,
-}: React.PropsWithChildren<ModalInstanceProviderProps>) => {
-  return (
-    <ModalInstanceContext.Provider value={{ visible, closeSelf, replaceSelf }}>
-      {children}
-    </ModalInstanceContext.Provider>
-  );
-};
-
-// 모달 인스턴스 Context 사용 훅
 export const useModalInstance = (): ModalInstanceContextType => {
   const context = useContext(ModalInstanceContext);
 
@@ -59,4 +40,17 @@ export const useModalInstance = (): ModalInstanceContextType => {
   }
 
   return context;
+};
+
+export const ModalInstanceProvider = ({
+  children,
+  visible,
+  closeSelf,
+  replaceSelf,
+}: React.PropsWithChildren<ModalInstanceContextType>) => {
+  return (
+    <ModalInstanceContext.Provider value={{ visible, closeSelf, replaceSelf }}>
+      {children}
+    </ModalInstanceContext.Provider>
+  );
 };
