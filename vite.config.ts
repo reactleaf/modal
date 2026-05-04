@@ -7,6 +7,7 @@ export default defineConfig({
       entryRoot: "src",
       outDirs: "dist",
       tsconfigPath: "./tsconfig.json",
+      bundleTypes: true,
     }),
   ],
   build: {

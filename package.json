@@ -1,6 +1,6 @@
 {
   "name": "@reactleaf/modal",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-beta.0",
   "packageManager": "pnpm@10.11.0",
   "description": "React Modal Library with context",
   "type": "module",
@@ -43,6 +43,7 @@
     "classnames": "^2"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.58.7",
     "@testing-library/react": "^14.3.1",
     "@types/jest": "^29.5.14",
     "@types/react": "^18.0.9",
@@ -52,7 +53,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "ts-jest": "^29.3.1",
-    "typescript": "^4",
+    "typescript": "^5.9.3",
     "unplugin-dts": "^1.0.0",
     "vite": "^7.3.2"
   },
