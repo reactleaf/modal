@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@reactleaf/modal': path.resolve(dirname, '../app/index.ts'),
+      '@reactleaf/modal': path.resolve(dirname, '../src/index.ts'),
     },
   },
 });

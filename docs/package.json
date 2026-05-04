@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && vite build"
   },
   "dependencies": {
     "@reactleaf/modal": "2.0.0-alpha.0",

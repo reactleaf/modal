@@ -3,15 +3,24 @@
   "version": "2.0.0-alpha.1",
   "packageManager": "pnpm@10.11.0",
   "description": "React Modal Library with context",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./style.css",
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmit && vite build",
     "dev:docs": "pnpm --filter ./docs dev",
     "build:docs": "pnpm --filter ./docs build",
-    "preview:docs": "pnpm --filter ./docs preview",
     "test": "jest",
-    "publish:npm": "npm run build && npm publish --access public --ignore-scripts"
+    "publish:npm": "pnpm build && npm publish --access public --ignore-scripts"
   },
   "repository": {
     "type": "git",
@@ -43,7 +52,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "ts-jest": "^29.3.1",
-    "typescript": "^4"
+    "typescript": "^4",
+    "unplugin-dts": "^1.0.0",
+    "vite": "^7.3.2"
   },
   "peerDependencies": {
     "react": "^16 || ^17 || ^18 || ^19",

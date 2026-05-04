@@ -13,7 +13,7 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
-      "@reactleaf/modal": ["../app/index.ts"]
+      "@reactleaf/modal": ["../src/index.ts"]
     },
     "resolveJsonModule": true,
     "isolatedModules": true,

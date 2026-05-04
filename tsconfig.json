@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
     "target": "ES2015",
-    "module": "commonjs",
+    "module": "ES2020",
+    "moduleResolution": "node",
     "declaration": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "lib": ["DOM", "ES2017"]
   },
-  "include": ["app/**/*.ts", "app/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "examples", "docs", "index.*", "app/**/*.test.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "examples", "docs", "index.*", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

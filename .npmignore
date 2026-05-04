@@ -9,14 +9,13 @@ pnpm-workspace.yaml
 jest.config.cjs
 tsconfig.json
 tsconfig.jest.json
+vite.config.ts
 .github/
 .vscode/
+.pnpm-store/
 
-# Source & site (published JS lives under dist/app only; leading / = package root only)
-/app/
+# Exclude docs
 /docs/
-/examples/
-/src/
 
 # Dev-only markdown
 context.md
@@ -26,8 +25,3 @@ context.md
 **/*.test.tsx
 **/*.test.js
 **/*.test.d.ts
-
-# Stray tsc output (root dist/*.js is duplicate of dist/app; dist/docs is accidental)
-dist/docs/
-dist/*.js
-dist/*.d.ts
