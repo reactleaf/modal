@@ -55,8 +55,8 @@ importers:
   docs:
     dependencies:
       '@reactleaf/modal':
-        specifier: 2.0.0-alpha.0
-        version: 2.0.0-alpha.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: workspace:*
+        version: link:..
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -521,12 +521,6 @@ packages:
 
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
-
-  '@reactleaf/modal@2.0.0-alpha.0':
-    resolution: {integrity: sha512-a2Ch27+3lIFEm6FWvd6xMc1pWoLWoHx7DZA5uW5EN/LI0KCmphNjdaZ6EUamiPcrCpOUzXx5010Q6HyGTHrUcg==}
-    peerDependencies:
-      react: ^16 || ^17 || ^18 || ^19
-      react-dom: ^16 || ^17 || ^18 || ^19
 
   '@rolldown/pluginutils@1.0.0-rc.3':
     resolution: {integrity: sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==}
@@ -2934,12 +2928,6 @@ snapshots:
       resolve: 1.22.12
 
   '@microsoft/tsdoc@0.16.0': {}
-
-  '@reactleaf/modal@2.0.0-alpha.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      classnames: 2.5.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 

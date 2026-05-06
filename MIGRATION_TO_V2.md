@@ -30,7 +30,7 @@ In v1, modals were looked up by name, so the actual modal component was often no
 ## Installation
 
 ```bash
-npm install @reactleaf/modal@2.0.0-alpha.0
+npm install @reactleaf/modal@2
 ```
 
 ## Step-by-step migration
@@ -323,7 +323,7 @@ If you get `useModalInstance must be used within a ModalInstanceProvider`:
 
 1. Update TypeScript to a recent version
 2. Remove `BasicModalProps` from your component interfaces
-3. Use explicit type parameters when needed: `modal.open<PropsType>(Component, props)`
+3. Prefer `ModalComponent<Props, Result>` when you want `modal.open(Component, props)` to infer the resolved result type
 4. Use `null` as the second argument when passing options to a no-props modal
 
 ### Missing modals

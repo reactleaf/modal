@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0](https://github.com/reactleaf/modal/tree/2.0.0)
+
+- Redesigned the modal API around direct component usage, a user-owned `ModalManager`, and promise-based results. See the [v2 migration guide](./MIGRATION_TO_V2.md).
+
 ## [1.1.5](https://github.com/react-leaf/modal/tree/1.1.5) (2024-02-07)
 
 - blur document's active element right before modal opens.
