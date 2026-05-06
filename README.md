@@ -1,6 +1,6 @@
 # @reactleaf/modal
 
-[npm version](https://badge.fury.io/js/@reactleaf%2Fmodal)
+[![npm version](https://badge.fury.io/js/@reactleaf%2Fmodal.svg)](https://badge.fury.io/js/@reactleaf%2Fmodal)
 
 A type-safe React modal library for opening modal components from anywhere in your code and receiving their results as `Promise` values when they close.
 

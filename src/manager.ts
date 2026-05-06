@@ -1,12 +1,17 @@
 import React from 'react';
 
 import { createModalHistoryState, getModalIdFromHistoryState } from './historyState';
+import { MODAL_ABORTED, MODAL_REPLACED } from './signals';
+import type { ModalClosedSignal } from './signals';
 import {
   CloseOptions,
   CloseRequestListener,
   ModalComponent,
+  ModalComponentProps,
   ModalListener,
+  ModalOpenResult,
   ModalOptions,
+  ModalReplaceResult,
   ModalState,
   PropsAreOptional,
   ReplaceRequestListener,
@@ -27,13 +32,7 @@ type PendingProgrammaticBack = {
   settle: () => void;
 };
 
-export const MODAL_ABORTED: unique symbol = Symbol.for('@reactleaf/modal/aborted');
-export const MODAL_REPLACED: unique symbol = Symbol.for('@reactleaf/modal/replaced');
-export type ModalAborted = typeof MODAL_ABORTED;
-export type ModalReplaced = typeof MODAL_REPLACED;
-export type ModalClosedSignal = ModalAborted | ModalReplaced;
-
-export default class ModalManager {
+export class ModalManager {
   private modalStack: ModalEntry[] = [];
   private listeners: ModalListener[] = [];
   private closeRequestListener: CloseRequestListener | null = null;
@@ -46,6 +45,18 @@ export default class ModalManager {
   /* -------------------------------------------------------------------------- */
   /* Open / replace                                                             */
   /* -------------------------------------------------------------------------- */
+
+  open<Component extends ModalComponent<any, any>>(
+    Component: PropsAreOptional<ModalComponentProps<Component>> extends true ? Component : never,
+    props?: ModalComponentProps<Component> | null,
+    options?: ModalOptions,
+  ): ModalOpenResult<Component>;
+
+  open<Component extends ModalComponent<any, any>>(
+    Component: PropsAreOptional<ModalComponentProps<Component>> extends true ? never : Component,
+    props: ModalComponentProps<Component>,
+    options?: ModalOptions,
+  ): ModalOpenResult<Component>;
 
   open<Props, Result = unknown>(
     Component: PropsAreOptional<Props> extends true ? ModalComponent<Props> : never,
@@ -82,6 +93,21 @@ export default class ModalManager {
       this.notifyListeners();
     });
   }
+
+  /** @internal Used by ModalProvider to replace a specific modal layer from useModalInstance(). */
+  replaceById<Component extends ModalComponent<any, any>>(
+    id: string,
+    Component: PropsAreOptional<ModalComponentProps<Component>> extends true ? Component : never,
+    props?: ModalComponentProps<Component> | null,
+    options?: ModalOptions,
+  ): ModalReplaceResult<Component>;
+
+  replaceById<Component extends ModalComponent<any, any>>(
+    id: string,
+    Component: PropsAreOptional<ModalComponentProps<Component>> extends true ? never : Component,
+    props: ModalComponentProps<Component>,
+    options?: ModalOptions,
+  ): ModalReplaceResult<Component>;
 
   /** @internal Used by ModalProvider to replace a specific modal layer from useModalInstance(). */
   replaceById<Props, Result = unknown>(

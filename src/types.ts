@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ModalClosedSignal } from './signals';
 
 /* Layer / modal entry ------------------------------------------------------ */
 
@@ -24,9 +25,16 @@ export interface ModalState<TComponent extends React.ComponentType = React.Compo
   options: ModalOptions;
 }
 
-export type ModalComponent<TProps = unknown> = React.ComponentType<TProps> & {
+export type ModalComponent<TProps = unknown, TResult = unknown> = React.ComponentType<TProps> & {
   layerOptions?: Partial<LayerOptions>;
+  readonly __modalResult?: TResult;
 };
+
+export type ModalComponentProps<TComponent extends React.ComponentType<any>> =
+  TComponent extends ModalComponent<infer Props, any> ? Props : React.ComponentProps<TComponent>;
+
+export type ModalComponentResult<TComponent extends React.ComponentType<any>> =
+  TComponent extends ModalComponent<any, infer Result> ? Result : unknown;
 
 export type ModalListener = (modalStack: ModalState[]) => void;
 
@@ -53,8 +61,17 @@ export interface ReplaceRequest {
 
 export type ReplaceRequestListener = (request: ReplaceRequest) => boolean;
 
-export type PropsAreOptional<Props> =
-  [Props] extends [void] ? true
-    : [Props] extends [undefined] ? true
-      : {} extends Props ? true
-        : false;
+export type PropsAreOptional<Props> = [Props] extends [void]
+  ? true
+  : [Props] extends [undefined]
+    ? true
+    : {} extends Props
+      ? true
+      : false;
+
+/* Return types ---- */
+export type ModalOpenResult<TComponent extends React.ComponentType<any>> = Promise<
+  ModalComponentResult<TComponent> | ModalClosedSignal | undefined
+>;
+
+export type ModalReplaceResult<TComponent extends React.ComponentType<any>> = ModalOpenResult<TComponent>;

@@ -1,11 +1,11 @@
 /** @jest-environment jsdom */
-
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { act } from "react";
+import React, { act } from "react";
 
 import { ModalProvider } from "./ModalProvider";
 import { useModalInstance } from "./context";
-import ModalManager, { MODAL_REPLACED } from "./manager";
+import { ModalManager } from "./manager";
+import { MODAL_REPLACED } from "./signals";
 import type { ModalComponent } from "./types";
 
 const TestModal: ModalComponent<Record<string, never>> = Object.assign(

@@ -1,13 +1,31 @@
 import React, { createContext, useContext } from 'react';
 
-import type { ModalClosedSignal } from './manager';
-import type { ModalComponent, ModalOptions, PropsAreOptional } from './types';
+import type { ModalClosedSignal } from './signals';
+import type {
+  ModalComponent,
+  ModalComponentProps,
+  ModalOptions,
+  ModalReplaceResult,
+  PropsAreOptional,
+} from './types';
 
 /* Instance API ------------------------------------------------------------- */
 
-type CloseSelf = <T = unknown>(result?: T) => Promise<void>;
+type CloseSelf<Result = unknown> = (result?: Result) => Promise<void>;
 
 export type ReplaceSelf = {
+  <Component extends ModalComponent<any, any>>(
+    Component: PropsAreOptional<ModalComponentProps<Component>> extends true ? Component : never,
+    props?: ModalComponentProps<Component> | null,
+    options?: ModalOptions,
+  ): ModalReplaceResult<Component>;
+
+  <Component extends ModalComponent<any, any>>(
+    Component: PropsAreOptional<ModalComponentProps<Component>> extends true ? never : Component,
+    props: ModalComponentProps<Component>,
+    options?: ModalOptions,
+  ): ModalReplaceResult<Component>;
+
   <Props, Result = unknown>(
     Component: PropsAreOptional<Props> extends true ? ModalComponent<Props> : never,
     props?: Props | null,
@@ -21,15 +39,15 @@ export type ReplaceSelf = {
   ): Promise<Result | ModalClosedSignal | undefined>;
 };
 
-export interface ModalInstanceContextType {
+export interface ModalInstanceContextType<Result = unknown> {
   visible: boolean;
-  closeSelf: CloseSelf;
+  closeSelf: CloseSelf<Result>;
   replaceSelf: ReplaceSelf;
 }
 
 const ModalInstanceContext = createContext<ModalInstanceContextType | null>(null);
 
-export const useModalInstance = (): ModalInstanceContextType => {
+export const useModalInstance = <Result = unknown,>(): ModalInstanceContextType<Result> => {
   const context = useContext(ModalInstanceContext);
 
   if (!context) {
@@ -39,7 +57,7 @@ export const useModalInstance = (): ModalInstanceContextType => {
     );
   }
 
-  return context;
+  return context as ModalInstanceContextType<Result>;
 };
 
 export const ModalInstanceProvider = ({

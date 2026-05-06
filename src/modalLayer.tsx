@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import type { ReplaceSelf } from "./context";
 import { ModalInstanceProvider } from "./context";
-import ModalManager from "./manager";
+import { ModalManager } from "./manager";
 import { dimClassName, mergeModalLayerOptions } from "./modalOptions";
 import type { CloseRequest, LayerOptions, ModalComponent, ModalOptions, ModalState, ReplaceRequest } from "./types";
 

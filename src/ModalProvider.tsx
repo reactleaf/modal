@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import ModalManager from "./manager";
+import { ModalManager } from "./manager";
 import { ModalLayer } from "./modalLayer";
 import type { ModalLayerTransitionRequest } from "./modalLayer";
 import { mergeRootOptions } from "./modalOptions";

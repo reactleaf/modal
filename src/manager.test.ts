@@ -1,4 +1,5 @@
-import ModalManager, { MODAL_ABORTED, MODAL_REPLACED } from './manager';
+import { ModalManager } from './manager';
+import { MODAL_ABORTED, MODAL_REPLACED } from './signals';
 import type { LayerOptions, ModalComponent } from './types';
 
 function installWindowMock() {
