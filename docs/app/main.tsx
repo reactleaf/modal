@@ -2,7 +2,7 @@ import { MODAL_ABORTED, MODAL_REPLACED, ModalManager, ModalProvider } from "@rea
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "../../style.css";
-import { Alert, Confirm, EmailVerification, Prompt, PromptProps } from "./example-modals";
+import { Alert, Confirm, EmailVerification, Prompt } from "./example-modals";
 import "./styles.css";
 
 const modal = new ModalManager();
@@ -61,7 +61,7 @@ function App() {
   }
 
   async function handlePrompt() {
-    const result = await modal.open<PromptProps, string | null>(Prompt, {
+    const result = await modal.open(Prompt, {
       title: "What should we call this item?",
       placeholder: "Item name",
     });
@@ -199,14 +199,14 @@ export function App() {
               modal to read <code>visible</code> and resolve the opener with <code>closeSelf(result)</code>.
             </p>
           </div>
-          <CodeBlock>{`import { useModalInstance } from '@reactleaf/modal';
+          <CodeBlock>{`import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
 
 type ConfirmProps = {
   message: string;
 };
 
-export function Confirm({ message }: ConfirmProps) {
-  const { visible, closeSelf } = useModalInstance();
+export const Confirm: ModalComponent<ConfirmProps, boolean> = ({ message }) => {
+  const { visible, closeSelf } = useModalInstance<boolean>();
 
   return (
     <div className={visible ? 'modal visible' : 'modal'}>
@@ -215,7 +215,7 @@ export function Confirm({ message }: ConfirmProps) {
       <button onClick={() => closeSelf(true)}>Confirm</button>
     </div>
   );
-}`}</CodeBlock>
+};`}</CodeBlock>
         </section>
 
         <section id="manager-api" className="section split-section">
@@ -228,7 +228,7 @@ export function Confirm({ message }: ConfirmProps) {
             </p>
           </div>
           <CodeBlock>{`import { modal } from './modal';
-import { Confirm } from './modals/Confirm';
+import Confirm from './modals/Confirm';
 
 export async function deleteItem() {
   const confirmed = await modal.open(Confirm, {
@@ -250,10 +250,14 @@ export async function deleteItem() {
               opens.
             </p>
           </div>
-          <CodeBlock>{`import { useModalInstance } from '@reactleaf/modal';
+          <CodeBlock>{`import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
 import { modal } from './modal';
-import { EmailModal } from './modals/EmailModal';
-import { CodeModal } from './modals/CodeModal';
+import EmailModal from './modals/EmailModal';
+import CodeModal from './modals/CodeModal';
+
+type EmailModalProps = {
+  onVerified: () => Promise<void>;
+};
 
 export function verifyEmail() {
   void modal.open(EmailModal, {
@@ -261,7 +265,7 @@ export function verifyEmail() {
   });
 }
 
-function EmailModal({ onVerified }) {
+const EmailModal: ModalComponent<EmailModalProps, never> = ({ onVerified }) => {
   const { replaceSelf } = useModalInstance();
 
   async function submitEmail(email) {
@@ -275,7 +279,7 @@ function EmailModal({ onVerified }) {
       await onVerified();
     }
   }
-}`}</CodeBlock>
+};`}</CodeBlock>
         </section>
       </main>
     </ModalProvider>

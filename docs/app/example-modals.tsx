@@ -7,8 +7,8 @@ interface AlertProps {
   confirmText?: string;
 }
 
-export const Alert: ModalComponent<AlertProps> = ({ message, onConfirm, confirmText = "OK" }) => {
-  const { closeSelf } = useModalInstance();
+export const Alert: ModalComponent<AlertProps, "confirmed"> = ({ message, onConfirm, confirmText = "OK" }) => {
+  const { closeSelf } = useModalInstance<"confirmed">();
 
   async function handleConfirm() {
     await onConfirm?.();
@@ -39,8 +39,12 @@ interface ConfirmProps {
   cancelText?: string;
 }
 
-export const Confirm: ModalComponent<ConfirmProps> = ({ message, confirmText = "Confirm", cancelText = "Cancel" }) => {
-  const { closeSelf } = useModalInstance();
+export const Confirm: ModalComponent<ConfirmProps, boolean> = ({
+  message,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+}) => {
+  const { closeSelf } = useModalInstance<boolean>();
 
   return (
     <div style={modalStyle}>
@@ -67,12 +71,12 @@ interface EmailVerificationProps {
   onComplete: (verified: boolean | undefined) => void;
 }
 
-export const EmailVerification: ModalComponent<EmailVerificationProps> = ({ onComplete }) => {
+export const EmailVerification: ModalComponent<EmailVerificationProps, never> = ({ onComplete }) => {
   const { replaceSelf } = useModalInstance();
   const [email, setEmail] = React.useState("");
 
   async function handleSubmit() {
-    const verified = await replaceSelf<VerificationCodeProps, boolean>(VerificationCode, {
+    const verified = await replaceSelf(VerificationCode, {
       email,
     });
 
@@ -107,8 +111,8 @@ interface VerificationCodeProps {
   email: string;
 }
 
-const VerificationCode: ModalComponent<VerificationCodeProps> = ({ email }) => {
-  const { closeSelf } = useModalInstance();
+const VerificationCode: ModalComponent<VerificationCodeProps, boolean> = ({ email }) => {
+  const { closeSelf } = useModalInstance<boolean>();
   const [code, setCode] = React.useState("");
 
   return (
@@ -134,8 +138,8 @@ export interface PromptProps {
   placeholder?: string;
 }
 
-export const Prompt: ModalComponent<PromptProps> = ({ title, placeholder = "Type here" }) => {
-  const { closeSelf } = useModalInstance();
+export const Prompt: ModalComponent<PromptProps, string | null> = ({ title, placeholder = "Type here" }) => {
+  const { closeSelf } = useModalInstance<string | null>();
   const [value, setValue] = React.useState("");
 
   return (

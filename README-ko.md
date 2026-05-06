@@ -85,7 +85,7 @@ function App() {
 
 ### 3. 모달 컴포넌트 만들기
 
-모달은 일반 React 컴포넌트입니다. `visible`은 열림/닫힘 애니메이션 상태에 사용할 수 있고, `closeSelf(result)`는 현재 모달을 닫으면서 `modal.open(...)`의 `Promise`를 `result`로 resolve합니다.
+모달은 일반 React 컴포넌트입니다. `visible`은 열림/닫힘 애니메이션 상태에 사용할 수 있고, `closeSelf(result)`는 현재 모달을 닫으면서 `modal.open(...)`의 `Promise`를 `result`로 resolve합니다. `useModalInstance<Result>()`에 전달하는 제네릭은 `closeSelf(...)`가 받을 수 있는 값의 타입을 제한하는 용도입니다.
 
 ```tsx
 import { ModalComponent, useModalInstance } from '@reactleaf/modal';
@@ -94,8 +94,8 @@ export type ConfirmProps = {
   message: string;
 };
 
-export const Confirm: ModalComponent<ConfirmProps> = ({ message }) => {
-  const { visible, closeSelf } = useModalInstance();
+export const Confirm: ModalComponent<ConfirmProps, boolean> = ({ message }) => {
+  const { visible, closeSelf } = useModalInstance<boolean>();
 
   return (
     <div className={visible ? 'confirm visible' : 'confirm'}>
@@ -116,10 +116,10 @@ Confirm.layerOptions = {
 
 ```tsx
 import { modal } from './modal';
-import { Confirm, type ConfirmProps } from './modals/Confirm';
+import Confirm from './modals/Confirm';
 
 async function deleteItem() {
-  const confirmed = await modal.open<ConfirmProps, boolean>(Confirm, {
+  const confirmed = await modal.open(Confirm, {
     message: '정말 삭제할까요?',
   });
 
@@ -181,10 +181,10 @@ await modal.open(EmptyModal);
 await modal.open(EmptyModal, null, { closeOnOutsideClick: false });
 ```
 
-결과 타입을 명시하고 싶을 때는 두 번째 제네릭 인자를 사용합니다. 실제 반환 타입에는 사용자 지정 결과 타입에 더해 `ModalAborted | ModalReplaced | undefined`가 포함될 수 있습니다.
+모달 컴포넌트가 `ModalComponent<Props, Result>`로 타입 지정되어 있으면 `modal.open(...)`은 props와 결과 타입을 함께 추론합니다. 타입 지정되지 않은 컴포넌트에서 결과 타입을 직접 명시하고 싶을 때는 두 번째 제네릭 인자를 사용할 수 있습니다. 실제 반환 타입에는 사용자 지정 결과 타입에 더해 `ModalAborted | ModalReplaced | undefined`가 포함될 수 있습니다.
 
 ```ts
-const name = await modal.open<PromptProps, string | null>(Prompt, {
+const name = await modal.open(Prompt, {
   title: '이름을 입력하세요.',
 });
 ```
@@ -298,7 +298,7 @@ const { visible, closeSelf, replaceSelf } = useModalInstance();
 
 ```tsx
 import { useModalInstance } from '@reactleaf/modal';
-import { CodeModal } from './CodeModal';
+import CodeModal from './CodeModal';
 
 function EmailModal({ onVerified }: EmailModalProps) {
   const { replaceSelf } = useModalInstance();
@@ -306,7 +306,7 @@ function EmailModal({ onVerified }: EmailModalProps) {
   async function submitEmail(email: string) {
     await sendVerificationCode(email);
 
-    const verified = await replaceSelf<CodeModalProps, boolean>(CodeModal, {
+    const verified = await replaceSelf(CodeModal, {
       email,
     });
 
@@ -363,7 +363,7 @@ await modal.open(Confirm, { message: '진행할까요?' }, { className: 'confirm
 
 ### 컴포넌트 기본 옵션
 
-`ModalComponent` 타입을 사용하면 컴포넌트에 `layerOptions`를 선언할 수 있습니다.
+`ModalComponent<Props, Result>` 타입을 사용하면 컴포넌트에 `layerOptions`를 선언하고, `modal.open(...)`이 추론할 결과 타입을 함께 노출할 수 있습니다.
 
 ```tsx
 import { ModalComponent } from '@reactleaf/modal';
@@ -386,7 +386,7 @@ Alert.layerOptions = {
 ### 확인 모달
 
 ```tsx
-const confirmed = await modal.open<ConfirmProps, boolean>(Confirm, {
+const confirmed = await modal.open(Confirm, {
   message: '정말 삭제하시겠습니까?',
 });
 
@@ -398,7 +398,7 @@ if (confirmed) {
 ### 입력 모달
 
 ```tsx
-const title = await modal.open<PromptProps, string | null>(Prompt, {
+const title = await modal.open(Prompt, {
   title: '문서 제목',
   placeholder: '제목을 입력하세요.',
 });
@@ -435,7 +435,7 @@ manager 인스턴스를 import할 수 있는 곳이라면 React 컴포넌트 밖
 
 ```ts
 import { modal } from './modal';
-import { Alert } from './modals/Alert';
+import Alert from './modals/Alert';
 
 window.addEventListener('error', () => {
   void modal.open(Alert, { message: '에러가 발생했습니다.' });
@@ -541,24 +541,28 @@ await modal.open(Confirm, { message: '진행할까요?' }, { dim: 'danger-dim' }
 `replaceSelf(...)`를 사용하면 현재 모달의 layer와 dim을 유지한 채 content만 다음 모달로 교체할 수 있습니다. 이메일 입력 후 인증번호 입력으로 넘어가는 것처럼 한 흐름 안에서 단계가 바뀌는 UI에 적합합니다.
 
 ```tsx
-import { useModalInstance } from '@reactleaf/modal';
+import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
 import { modal } from './modal';
-import { CodeModal, type CodeModalProps } from './CodeModal';
-import { EmailModal, type EmailModalProps } from './EmailModal';
+import CodeModal from './CodeModal';
+import EmailModal from './EmailModal';
+
+type EmailModalProps = {
+  onVerified: () => Promise<void>;
+};
 
 function startEmailVerification() {
-  void modal.open<EmailModalProps, never>(EmailModal, {
+  void modal.open(EmailModal, {
     onVerified: completeSignIn,
   });
 }
 
-function EmailModal({ onVerified }: EmailModalProps) {
+const EmailModal: ModalComponent<EmailModalProps, never> = ({ onVerified }) => {
   const { replaceSelf } = useModalInstance();
 
   async function submitEmail(email: string) {
     await sendVerificationCode(email);
 
-    const verified = await replaceSelf<CodeModalProps, boolean>(CodeModal, {
+    const verified = await replaceSelf(CodeModal, {
       email,
     });
 
@@ -566,7 +570,7 @@ function EmailModal({ onVerified }: EmailModalProps) {
       await onVerified();
     }
   }
-}
+};
 ```
 
 이전 모달의 `open()` Promise는 `MODAL_REPLACED`로 resolve되고, `replaceSelf()`가 반환한 Promise는 새 모달의 결과로 resolve됩니다. replace 중에는 layer가 유지되므로 dim이 사라졌다가 다시 나타나지 않고, content만 닫힌 뒤 새 content가 열립니다.

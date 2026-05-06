@@ -90,7 +90,7 @@ Open a modal by passing the component and its props to `modal.open(Component, pr
 
 ```tsx
 import { modal } from './modal';
-import { Confirm } from './modals/Confirm';
+import Confirm from './modals/Confirm';
 
 async function deleteItem() {
   const confirmed = await modal.open(Confirm, {
@@ -273,7 +273,7 @@ Use `replaceSelf(...)` for multi-step flows that should keep the same layer whil
 
 ```tsx
 import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
-import { CodeModal } from './CodeModal';
+import CodeModal from './CodeModal';
 
 type EmailModalProps = {
   onVerified: () => Promise<void>;
@@ -305,7 +305,7 @@ When a modal is replaced, the previous modal's original `open()` Promise resolve
 ```tsx
 import { MODAL_ABORTED } from '@reactleaf/modal';
 import { modal } from './modal';
-import { Alert } from './Alert';
+import Alert from './Alert';
 
 const controller = new AbortController();
 const timer = window.setTimeout(() => controller.abort(), 3000);

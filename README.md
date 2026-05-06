@@ -85,7 +85,7 @@ function App() {
 
 ### 3. Define a modal component
 
-Modals are plain React components. `visible` is useful for open/close transitions; `closeSelf(result)` closes the current modal and resolves the `modal.open(...)` promise with `result`.
+Modals are plain React components. `visible` is useful for open/close transitions; `closeSelf(result)` closes the current modal and resolves the `modal.open(...)` promise with `result`. The generic passed to `useModalInstance<Result>()` is only used to restrict the value accepted by `closeSelf(...)`.
 
 ```tsx
 import { ModalComponent, useModalInstance } from '@reactleaf/modal';
@@ -94,8 +94,8 @@ export type ConfirmProps = {
   message: string;
 };
 
-export const Confirm: ModalComponent<ConfirmProps> = ({ message }) => {
-  const { visible, closeSelf } = useModalInstance();
+export const Confirm: ModalComponent<ConfirmProps, boolean> = ({ message }) => {
+  const { visible, closeSelf } = useModalInstance<boolean>();
 
   return (
     <div className={visible ? 'confirm visible' : 'confirm'}>
@@ -120,10 +120,10 @@ Confirm.layerOptions = {
 
 ```tsx
 import { modal } from './modal';
-import { Confirm, type ConfirmProps } from './modals/Confirm';
+import Confirm from './modals/Confirm';
 
 async function deleteItem() {
-  const confirmed = await modal.open<ConfirmProps, boolean>(Confirm, {
+  const confirmed = await modal.open(Confirm, {
     message: 'Delete this item?',
   });
 
@@ -185,10 +185,10 @@ await modal.open(EmptyModal);
 await modal.open(EmptyModal, null, { closeOnOutsideClick: false });
 ```
 
-Use the second generic parameter when you want to spell out the resolved value. The actual resolved type can also include `ModalAborted | ModalReplaced | undefined` in addition to your result type.
+When a modal component is typed as `ModalComponent<Props, Result>`, `modal.open(...)` infers both its props and resolved value. For untyped components, use the second generic parameter when you want to spell out the resolved value. The actual resolved type can also include `ModalAborted | ModalReplaced | undefined` in addition to your result type.
 
 ```ts
-const name = await modal.open<PromptProps, string | null>(Prompt, {
+const name = await modal.open(Prompt, {
   title: 'Enter a name',
 });
 ```
@@ -300,7 +300,7 @@ Keeps the current layer (same `id`, backdrop behavior) and swaps the rendered co
 
 ```tsx
 import { useModalInstance } from '@reactleaf/modal';
-import { CodeModal } from './CodeModal';
+import CodeModal from './CodeModal';
 
 function EmailModal({ onVerified }: EmailModalProps) {
   const { replaceSelf } = useModalInstance();
@@ -308,7 +308,7 @@ function EmailModal({ onVerified }: EmailModalProps) {
   async function submitEmail(email: string) {
     await sendVerificationCode(email);
 
-    const verified = await replaceSelf<CodeModalProps, boolean>(CodeModal, {
+    const verified = await replaceSelf(CodeModal, {
       email,
     });
 
@@ -363,7 +363,7 @@ await modal.open(Confirm, { message: 'Continue?' }, { className: 'confirm-layer'
 
 ### Component-level defaults
 
-`ModalComponent` lets you attach `layerOptions` to the component.
+`ModalComponent<Props, Result>` lets you attach `layerOptions` to the component and expose the result type that `modal.open(...)` should infer.
 
 ```tsx
 import { ModalComponent } from '@reactleaf/modal';
@@ -386,7 +386,7 @@ Alert.layerOptions = {
 ### Confirmation
 
 ```tsx
-const confirmed = await modal.open<ConfirmProps, boolean>(Confirm, {
+const confirmed = await modal.open(Confirm, {
   message: 'Are you sure you want to delete this?',
 });
 
@@ -398,7 +398,7 @@ if (confirmed) {
 ### Prompt / input
 
 ```tsx
-const title = await modal.open<PromptProps, string | null>(Prompt, {
+const title = await modal.open(Prompt, {
   title: 'Document title',
   placeholder: 'Enter a title',
 });
@@ -435,7 +435,7 @@ Anywhere you can import the manager, you can open a modal even outside component
 
 ```ts
 import { modal } from './modal';
-import { Alert } from './modals/Alert';
+import Alert from './modals/Alert';
 
 window.addEventListener('error', () => {
   void modal.open(Alert, { message: 'Something went wrong.' });
@@ -538,24 +538,28 @@ await modal.open(Confirm, { message: 'Continue?' }, { dim: 'danger-dim' });
 `replaceSelf(...)` is a good fit when a flow should move to the next step in the same shell—e.g. email field, then verification code—without the backdrop flashing off and on.
 
 ```tsx
-import { useModalInstance } from '@reactleaf/modal';
+import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
 import { modal } from './modal';
-import { CodeModal, type CodeModalProps } from './CodeModal';
-import { EmailModal, type EmailModalProps } from './EmailModal';
+import CodeModal from './CodeModal';
+import EmailModal from './EmailModal';
+
+type EmailModalProps = {
+  onVerified: () => Promise<void>;
+};
 
 function startEmailVerification() {
-  void modal.open<EmailModalProps, never>(EmailModal, {
+  void modal.open(EmailModal, {
     onVerified: completeSignIn,
   });
 }
 
-function EmailModal({ onVerified }: EmailModalProps) {
+const EmailModal: ModalComponent<EmailModalProps, never> = ({ onVerified }) => {
   const { replaceSelf } = useModalInstance();
 
   async function submitEmail(email: string) {
     await sendVerificationCode(email);
 
-    const verified = await replaceSelf<CodeModalProps, boolean>(CodeModal, {
+    const verified = await replaceSelf(CodeModal, {
       email,
     });
 
@@ -563,7 +567,7 @@ function EmailModal({ onVerified }: EmailModalProps) {
       await onVerified();
     }
   }
-}
+};
 ```
 
 The earlier `open()` promise resolves to `MODAL_REPLACED`; the promise returned from `replaceSelf()` resolves with the new modal’s result. The layer (and dim) stay mounted while only the inner content animates out and in.
@@ -576,4 +580,3 @@ Run the app under `[docs/app](./docs/app)`:
 pnpm install
 pnpm dev:docs
 ```
-
