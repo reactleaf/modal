@@ -1,8 +1,24 @@
 {
   "name": "@reactleaf/modal",
   "version": "2.0.0",
-  "packageManager": "pnpm@10.11.0",
   "description": "React Modal Library with context",
+  "keywords": [
+    "context",
+    "modal",
+    "popup",
+    "react",
+    "typescript"
+  ],
+  "homepage": "https://github.com/reactleaf/modal#readme",
+  "bugs": {
+    "url": "https://github.com/reactleaf/modal/issues"
+  },
+  "license": "MIT",
+  "author": "Hyeonseok Yang <FourwingsY@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reactleaf/modal.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -19,26 +35,14 @@
     "build": "tsc --noEmit && vite build",
     "dev:docs": "pnpm --filter ./docs dev",
     "build:docs": "pnpm --filter ./docs build",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint src docs/app",
+    "prepare": "husky",
     "test": "jest",
+    "verify:precommit": "pnpm lint && pnpm fmt:check",
     "publish:npm": "pnpm build && npm publish --access public --ignore-scripts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/reactleaf/modal.git"
-  },
-  "bugs": {
-    "url": "https://github.com/reactleaf/modal/issues"
-  },
-  "homepage": "https://github.com/reactleaf/modal#readme",
-  "keywords": [
-    "react",
-    "typescript",
-    "modal",
-    "context",
-    "popup"
-  ],
-  "author": "Hyeonseok Yang <FourwingsY@gmail.com>",
-  "license": "MIT",
   "dependencies": {
     "classnames": "^2"
   },
@@ -48,8 +52,11 @@
     "@types/jest": "^29.5.14",
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.3.7",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "oxfmt": "^0.45.0",
+    "oxlint": "^1.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "ts-jest": "^29.3.1",
@@ -60,5 +67,6 @@
   "peerDependencies": {
     "react": "^16 || ^17 || ^18 || ^19",
     "react-dom": "^16 || ^17 || ^18 || ^19"
-  }
+  },
+  "packageManager": "pnpm@10.11.0"
 }

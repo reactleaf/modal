@@ -11,8 +11,11 @@ tsconfig.json
 tsconfig.jest.json
 vite.config.ts
 .github/
+.husky/
 .vscode/
+.oxfmtrc.jsonc
 .pnpm-store/
+coverage/
 
 # Exclude docs
 /docs/

@@ -42,8 +42,8 @@ npm install @reactleaf/modal@2
 ```ts
 // modals/register.ts
 export const register = {
-  Alert: () => import('./Alert'),
-  Confirm: () => import('./Confirm'),
+  Alert: () => import("./Alert"),
+  Confirm: () => import("./Confirm"),
 };
 ```
 
@@ -58,8 +58,8 @@ export const register = {
 **Before (v1.x):**
 
 ```tsx
-import { ModalProvider } from '@reactleaf/modal';
-import register from './modals/register';
+import { ModalProvider } from "@reactleaf/modal";
+import register from "./modals/register";
 
 function App() {
   return (
@@ -73,7 +73,7 @@ function App() {
 **After (v2.0):**
 
 ```tsx
-import { ModalManager, ModalProvider } from '@reactleaf/modal';
+import { ModalManager, ModalProvider } from "@reactleaf/modal";
 
 const modal = new ModalManager();
 
@@ -97,7 +97,7 @@ The `modal` instance passed to `ModalProvider` must be the same instance you cal
 **Before (v1.x):**
 
 ```tsx
-import { BasicModalProps } from '@reactleaf/modal';
+import { BasicModalProps } from "@reactleaf/modal";
 
 interface AlertProps extends BasicModalProps {
   message: string;
@@ -116,7 +116,7 @@ export default function Alert({ message, close }: AlertProps) {
 **After (v2.0):**
 
 ```tsx
-import { useModalInstance } from '@reactleaf/modal';
+import { useModalInstance } from "@reactleaf/modal";
 
 interface AlertProps {
   message: string;
@@ -126,9 +126,9 @@ const Alert = ({ message }: AlertProps) => {
   const { closeSelf, visible } = useModalInstance();
 
   return (
-    <div className={visible ? 'visible' : undefined}>
+    <div className={visible ? "visible" : undefined}>
       <p>{message}</p>
-      <button onClick={() => closeSelf('confirmed')}>OK</button>
+      <button onClick={() => closeSelf("confirmed")}>OK</button>
     </div>
   );
 };
@@ -145,13 +145,13 @@ export default Alert;
 **Before (v1.x):**
 
 ```tsx
-import { useModal } from '@reactleaf/modal';
+import { useModal } from "@reactleaf/modal";
 
 function MyComponent() {
   const { openModal } = useModal();
 
   const handleShowAlert = () => {
-    openModal('Alert', { message: 'Hello!' });
+    openModal("Alert", { message: "Hello!" });
   };
 }
 ```
@@ -159,13 +159,13 @@ function MyComponent() {
 **After (v2.0):**
 
 ```tsx
-import { ModalManager } from '@reactleaf/modal';
-import Alert from './modals/Alert';
+import { ModalManager } from "@reactleaf/modal";
+import Alert from "./modals/Alert";
 
 const modal = new ModalManager();
 
 async function handleShowAlert() {
-  const result = await modal.open(Alert, { message: 'Hello!' });
+  const result = await modal.open(Alert, { message: "Hello!" });
   console.log(result); // 'confirmed'
 }
 ```
@@ -176,7 +176,7 @@ async function handleShowAlert() {
 
 ```tsx
 const confirmed = await modal.open(Confirm, {
-  message: 'Are you sure you want to delete this item?',
+  message: "Are you sure you want to delete this item?",
 });
 
 if (confirmed) {
@@ -187,20 +187,16 @@ if (confirmed) {
 #### AbortController
 
 ```tsx
-import { MODAL_ABORTED } from '@reactleaf/modal';
+import { MODAL_ABORTED } from "@reactleaf/modal";
 
 const controller = new AbortController();
 
 setTimeout(() => controller.abort(), 5000);
 
-const result = await modal.open(
-  Alert,
-  { message: 'This will auto-close...' },
-  { abortController: controller },
-);
+const result = await modal.open(Alert, { message: "This will auto-close..." }, { abortController: controller });
 
 if (result === MODAL_ABORTED) {
-  console.log('Modal was aborted');
+  console.log("Modal was aborted");
 }
 ```
 
@@ -228,11 +224,11 @@ Options are merged in this order:
   rootOptions={{ preventScroll: true }}
 >
   <App />
-</ModalProvider>
+</ModalProvider>;
 
 Alert.layerOptions = { closeOnOutsideClick: false };
 
-await modal.open(Alert, { message: 'Hello' }, { className: 'alert-layer' });
+await modal.open(Alert, { message: "Hello" }, { className: "alert-layer" });
 ```
 
 ### 2. Context-based modal props
@@ -244,10 +240,10 @@ const MyModal = ({ title, message }: { title: string; message: string }) => {
   const { closeSelf, visible } = useModalInstance();
 
   return (
-    <div className={`modal ${visible ? 'visible' : ''}`}>
+    <div className={`modal ${visible ? "visible" : ""}`}>
       <h1>{title}</h1>
       <p>{message}</p>
-      <button onClick={() => closeSelf('success')}>OK</button>
+      <button onClick={() => closeSelf("success")}>OK</button>
     </div>
   );
 };
@@ -281,10 +277,10 @@ const unsubscribe = modal.subscribe((stack) => {
 
 ```tsx
 // Old
-import { useModal } from '@reactleaf/modal';
+import { useModal } from "@reactleaf/modal";
 
 // New
-import { ModalManager, ModalProvider, useModalInstance } from '@reactleaf/modal';
+import { ModalManager, ModalProvider, useModalInstance } from "@reactleaf/modal";
 ```
 
 ### Issue 2: `BasicModalProps` errors

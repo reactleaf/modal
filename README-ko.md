@@ -44,7 +44,7 @@ pnpm add @reactleaf/modal
 기본 레이어와 dim 스타일을 사용하려면 앱 엔트리에서 스타일시트를 한 번 import합니다.
 
 ```ts
-import '@reactleaf/modal/style.css';
+import "@reactleaf/modal/style.css";
 ```
 
 ## 빠른 시작
@@ -55,7 +55,7 @@ import '@reactleaf/modal/style.css';
 
 ```ts
 // modal.ts
-import { ModalManager } from '@reactleaf/modal';
+import { ModalManager } from "@reactleaf/modal";
 
 export const modal = new ModalManager();
 ```
@@ -65,8 +65,8 @@ export const modal = new ModalManager();
 만들어진 Manager를 Provider에 연결합니다.
 
 ```tsx
-import { ModalProvider } from '@reactleaf/modal';
-import { modal } from './modal';
+import { ModalProvider } from "@reactleaf/modal";
+import { modal } from "./modal";
 
 function App() {
   return (
@@ -88,7 +88,7 @@ function App() {
 모달은 일반 React 컴포넌트입니다. `visible`은 열림/닫힘 애니메이션 상태에 사용할 수 있고, `closeSelf(result)`는 현재 모달을 닫으면서 `modal.open(...)`의 `Promise`를 `result`로 resolve합니다. `useModalInstance<Result>()`에 전달하는 제네릭은 `closeSelf(...)`가 받을 수 있는 값의 타입을 제한하는 용도입니다.
 
 ```tsx
-import { ModalComponent, useModalInstance } from '@reactleaf/modal';
+import { ModalComponent, useModalInstance } from "@reactleaf/modal";
 
 export type ConfirmProps = {
   message: string;
@@ -98,7 +98,7 @@ export const Confirm: ModalComponent<ConfirmProps, boolean> = ({ message }) => {
   const { visible, closeSelf } = useModalInstance<boolean>();
 
   return (
-    <div className={visible ? 'confirm visible' : 'confirm'}>
+    <div className={visible ? "confirm visible" : "confirm"}>
       <p>{message}</p>
       <button onClick={() => closeSelf(false)}>취소</button>
       <button onClick={() => closeSelf(true)}>확인</button>
@@ -115,12 +115,12 @@ Confirm.layerOptions = {
 ### 4. 모달 열고 결과 받기
 
 ```tsx
-import { modal } from './modal';
-import Confirm from './modals/Confirm';
+import { modal } from "./modal";
+import Confirm from "./modals/Confirm";
 
 async function deleteItem() {
   const confirmed = await modal.open(Confirm, {
-    message: '정말 삭제할까요?',
+    message: "정말 삭제할까요?",
   });
 
   if (!confirmed) return;
@@ -136,7 +136,7 @@ async function deleteItem() {
 모달 stack을 관리하는 controller 인스턴스를 만듭니다.
 
 ```ts
-import { ModalManager } from '@reactleaf/modal';
+import { ModalManager } from "@reactleaf/modal";
 
 export const modal = new ModalManager();
 ```
@@ -170,7 +170,7 @@ Props:
 
 ```ts
 const result = await modal.open(Alert, {
-  message: '저장되었습니다.',
+  message: "저장되었습니다.",
 });
 ```
 
@@ -185,7 +185,7 @@ await modal.open(EmptyModal, null, { closeOnOutsideClick: false });
 
 ```ts
 const name = await modal.open(Prompt, {
-  title: '이름을 입력하세요.',
+  title: "이름을 입력하세요.",
 });
 ```
 
@@ -246,7 +246,7 @@ modal.closeAll();
 
 ```ts
 if (modal.hasOpenModals()) {
-  console.log('모달이 열려 있습니다.');
+  console.log("모달이 열려 있습니다.");
 }
 ```
 
@@ -258,7 +258,7 @@ if (modal.hasOpenModals()) {
 const opened = modal.getSnapshot();
 
 if (opened.some((item) => item.Component === Confirm)) {
-  console.log('Confirm이 이미 열려 있습니다.');
+  console.log("Confirm이 이미 열려 있습니다.");
 }
 ```
 
@@ -270,7 +270,7 @@ if (opened.some((item) => item.Component === Confirm)) {
 
 ```ts
 const unsubscribe = modal.subscribe((stack) => {
-  console.log('열린 모달 수:', stack.length);
+  console.log("열린 모달 수:", stack.length);
 });
 
 unsubscribe();
@@ -297,8 +297,8 @@ const { visible, closeSelf, replaceSelf } = useModalInstance();
 현재 모달 인스턴스의 layer를 유지한 채 content만 새 모달로 교체합니다.
 
 ```tsx
-import { useModalInstance } from '@reactleaf/modal';
-import CodeModal from './CodeModal';
+import { useModalInstance } from "@reactleaf/modal";
+import CodeModal from "./CodeModal";
 
 function EmailModal({ onVerified }: EmailModalProps) {
   const { replaceSelf } = useModalInstance();
@@ -347,18 +347,15 @@ export interface ModalOptions extends LayerOptions {
 3. `modal.open(...)` 호출 시 전달한 options
 
 ```tsx
-<ModalProvider
-  manager={modal}
-  defaultLayerOptions={{ closeOnOutsideClick: true, dim: true }}
->
+<ModalProvider manager={modal} defaultLayerOptions={{ closeOnOutsideClick: true, dim: true }}>
   <App />
-</ModalProvider>
+</ModalProvider>;
 
 Confirm.layerOptions = {
   closeOnOutsideClick: false,
 };
 
-await modal.open(Confirm, { message: '진행할까요?' }, { className: 'confirm-layer' });
+await modal.open(Confirm, { message: "진행할까요?" }, { className: "confirm-layer" });
 ```
 
 ### 컴포넌트 기본 옵션
@@ -366,7 +363,7 @@ await modal.open(Confirm, { message: '진행할까요?' }, { className: 'confirm
 `ModalComponent<Props, Result>` 타입을 사용하면 컴포넌트에 `layerOptions`를 선언하고, `modal.open(...)`이 추론할 결과 타입을 함께 노출할 수 있습니다.
 
 ```tsx
-import { ModalComponent } from '@reactleaf/modal';
+import { ModalComponent } from "@reactleaf/modal";
 
 type AlertProps = {
   message: string;
@@ -387,7 +384,7 @@ Alert.layerOptions = {
 
 ```tsx
 const confirmed = await modal.open(Confirm, {
-  message: '정말 삭제하시겠습니까?',
+  message: "정말 삭제하시겠습니까?",
 });
 
 if (confirmed) {
@@ -399,8 +396,8 @@ if (confirmed) {
 
 ```tsx
 const title = await modal.open(Prompt, {
-  title: '문서 제목',
-  placeholder: '제목을 입력하세요.',
+  title: "문서 제목",
+  placeholder: "제목을 입력하세요.",
 });
 
 if (title) {
@@ -411,21 +408,17 @@ if (title) {
 ### AbortController
 
 ```tsx
-import { MODAL_ABORTED } from '@reactleaf/modal';
+import { MODAL_ABORTED } from "@reactleaf/modal";
 
 const controller = new AbortController();
 const timer = window.setTimeout(() => controller.abort(), 3000);
 
-const result = await modal.open(
-  Alert,
-  { message: '3초 후 자동으로 닫힙니다.' },
-  { abortController: controller },
-);
+const result = await modal.open(Alert, { message: "3초 후 자동으로 닫힙니다." }, { abortController: controller });
 
 window.clearTimeout(timer);
 
 if (result === MODAL_ABORTED) {
-  console.log('모달이 abort로 닫혔습니다.');
+  console.log("모달이 abort로 닫혔습니다.");
 }
 ```
 
@@ -434,11 +427,11 @@ if (result === MODAL_ABORTED) {
 manager 인스턴스를 import할 수 있는 곳이라면 React 컴포넌트 밖에서도 모달을 열 수 있습니다.
 
 ```ts
-import { modal } from './modal';
-import Alert from './modals/Alert';
+import { modal } from "./modal";
+import Alert from "./modals/Alert";
 
-window.addEventListener('error', () => {
-  void modal.open(Alert, { message: '에러가 발생했습니다.' });
+window.addEventListener("error", () => {
+  void modal.open(Alert, { message: "에러가 발생했습니다." });
 });
 ```
 
@@ -449,10 +442,7 @@ window.addEventListener('error', () => {
 닫힘 애니메이션이 필요하면 `closeDelay`를 CSS transition 시간과 맞춥니다.
 
 ```tsx
-<ModalProvider
-  manager={modal}
-  defaultLayerOptions={{ closeDelay: 180 }}
->
+<ModalProvider manager={modal} defaultLayerOptions={{ closeDelay: 180 }}>
   <App />
 </ModalProvider>
 ```
@@ -498,7 +488,7 @@ const { visible } = useModalInstance();
 기본 스타일시트를 import해서 사용할 수 있습니다.
 
 ```ts
-import '@reactleaf/modal/style.css';
+import "@reactleaf/modal/style.css";
 ```
 
 주요 selector:
@@ -527,13 +517,13 @@ import '@reactleaf/modal/style.css';
 레이어 자체에 커스텀 class를 추가하려면 `className` 옵션을 사용합니다.
 
 ```ts
-await modal.open(Confirm, { message: '진행할까요?' }, { className: 'danger-modal-layer' });
+await modal.open(Confirm, { message: "진행할까요?" }, { className: "danger-modal-layer" });
 ```
 
 기본 dim class 대신 다른 class를 사용하려면 `dim`에 문자열을 전달합니다.
 
 ```ts
-await modal.open(Confirm, { message: '진행할까요?' }, { dim: 'danger-dim' });
+await modal.open(Confirm, { message: "진행할까요?" }, { dim: "danger-dim" });
 ```
 
 ## Smooth Sequential Flow
@@ -541,10 +531,10 @@ await modal.open(Confirm, { message: '진행할까요?' }, { dim: 'danger-dim' }
 `replaceSelf(...)`를 사용하면 현재 모달의 layer와 dim을 유지한 채 content만 다음 모달로 교체할 수 있습니다. 이메일 입력 후 인증번호 입력으로 넘어가는 것처럼 한 흐름 안에서 단계가 바뀌는 UI에 적합합니다.
 
 ```tsx
-import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
-import { modal } from './modal';
-import CodeModal from './CodeModal';
-import EmailModal from './EmailModal';
+import { type ModalComponent, useModalInstance } from "@reactleaf/modal";
+import { modal } from "./modal";
+import CodeModal from "./CodeModal";
+import EmailModal from "./EmailModal";
 
 type EmailModalProps = {
   onVerified: () => Promise<void>;
@@ -577,7 +567,11 @@ const EmailModal: ModalComponent<EmailModalProps, never> = ({ onVerified }) => {
 
 ## 동작 예제
 
-실행 가능한 예제는 [`docs/app`](./docs/app)를 참고하세요.
+GitHub Pages에서 실행 가능한 예제를 확인할 수 있습니다:
+
+https://reactleaf.github.io/modal/
+
+로컬에서 실행하려면 다음 명령어를 사용하세요.
 
 ```sh
 pnpm install

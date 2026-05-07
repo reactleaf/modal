@@ -7,6 +7,10 @@ type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ?
 
 type Expect<T extends true> = T;
 
+function typeOnlyBlock(): boolean {
+  return false;
+}
+
 type ConfirmProps = {
   message: string;
 };
@@ -99,7 +103,7 @@ test("untyped ModalComponent values can still use explicit result generics", () 
 });
 
 test("ModalComponent result type is inferred by replaceSelf", () => {
-  if (false) {
+  if (typeOnlyBlock()) {
     const replaceSelf = undefined as unknown as ReplaceSelf;
     const result = replaceSelf(Confirm, { message: "Replace?" });
 
@@ -111,7 +115,7 @@ test("ModalComponent result type is inferred by replaceSelf", () => {
 });
 
 test("replaceSelf keeps props validation from the replacement component type", () => {
-  if (false) {
+  if (typeOnlyBlock()) {
     const replaceSelf = undefined as unknown as ReplaceSelf;
 
     void replaceSelf(Confirm, { message: "Replace?" });
@@ -141,7 +145,7 @@ test("useModalInstance closeSelf rejects values outside the explicit result type
   type Instance = ModalInstanceContextType<boolean>;
   const closeSelf = undefined as unknown as Instance["closeSelf"];
 
-  if (false) {
+  if (typeOnlyBlock()) {
     void closeSelf(true);
 
     // @ts-expect-error closeSelf only accepts boolean results for this instance type.

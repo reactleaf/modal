@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-import { createModalHistoryState, getModalIdFromHistoryState } from './historyState';
-import { MODAL_ABORTED, MODAL_REPLACED } from './signals';
-import type { ModalClosedSignal } from './signals';
+import { createModalHistoryState, getModalIdFromHistoryState } from "./historyState";
+import { MODAL_ABORTED, MODAL_REPLACED } from "./signals";
+import type { ModalClosedSignal } from "./signals";
 import {
   CloseOptions,
   CloseRequestListener,
@@ -15,7 +15,7 @@ import {
   ModalState,
   PropsAreOptional,
   ReplaceRequestListener,
-} from './types';
+} from "./types";
 
 type ModalEntry = {
   id: string;
@@ -86,8 +86,8 @@ export class ModalManager {
       const modalEntry = this.createModalEntry(id, Component, props, options, resolve);
       this.modalStack.push(modalEntry);
 
-      if (typeof window !== 'undefined') {
-        window.history.pushState(createModalHistoryState(id), '', window.location.href);
+      if (typeof window !== "undefined") {
+        window.history.pushState(createModalHistoryState(id), "", window.location.href);
       }
 
       this.notifyListeners();
@@ -198,7 +198,14 @@ export class ModalManager {
     const modal = this.modalStack.find((m) => m.id === id);
     if (!modal) return false;
 
-    if (this.closeRequestListener?.({ id, result, options, historySettled: this.prepareClose(id, options) })) {
+    if (
+      this.closeRequestListener?.({
+        id,
+        result,
+        options,
+        historySettled: this.prepareClose(id, options),
+      })
+    ) {
       return true;
     }
 
@@ -344,9 +351,9 @@ export class ModalManager {
         this.closeWithResult(id, MODAL_ABORTED);
       };
 
-      finalOptions.abortController.signal.addEventListener('abort', handleAbort, { once: true });
+      finalOptions.abortController.signal.addEventListener("abort", handleAbort, { once: true });
       disposeAbortListener = () => {
-        finalOptions.abortController?.signal.removeEventListener('abort', handleAbort);
+        finalOptions.abortController?.signal.removeEventListener("abort", handleAbort);
       };
     }
 
@@ -418,11 +425,11 @@ export class ModalManager {
   }
 
   private startHistoryBack(id: string, options?: CloseOptions): Promise<void> {
-    if (options?.historyBack || typeof window === 'undefined') {
+    if (options?.historyBack || typeof window === "undefined") {
       return Promise.resolve();
     }
 
-    if (typeof window.addEventListener !== 'function') {
+    if (typeof window.addEventListener !== "function") {
       window.history.back();
       return Promise.resolve();
     }

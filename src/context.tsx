@@ -1,13 +1,7 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext } from "react";
 
-import type { ModalClosedSignal } from './signals';
-import type {
-  ModalComponent,
-  ModalComponentProps,
-  ModalOptions,
-  ModalReplaceResult,
-  PropsAreOptional,
-} from './types';
+import type { ModalClosedSignal } from "./signals";
+import type { ModalComponent, ModalComponentProps, ModalOptions, ModalReplaceResult, PropsAreOptional } from "./types";
 
 /* Instance API ------------------------------------------------------------- */
 
@@ -52,8 +46,8 @@ export const useModalInstance = <Result = unknown,>(): ModalInstanceContextType<
 
   if (!context) {
     throw new Error(
-      'useModalInstance must be used within a ModalInstanceProvider. ' +
-        'Make sure your modal component is rendered through the modal system.',
+      "useModalInstance must be used within a ModalInstanceProvider. " +
+        "Make sure your modal component is rendered through the modal system.",
     );
   }
 

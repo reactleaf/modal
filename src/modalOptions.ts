@@ -17,10 +17,7 @@ export function mergeRootOptions(rootOptions?: Partial<RootOptions>): Required<R
 }
 
 /** Provider defaultLayerOptions + modal entry options (later wins). */
-export function mergeModalLayerOptions(
-  modal: ModalState,
-  providerDefaults?: Partial<LayerOptions>,
-): LayerOptions {
+export function mergeModalLayerOptions(modal: ModalState, providerDefaults?: Partial<LayerOptions>): LayerOptions {
   return {
     ...DEFAULT_LAYER_OPTIONS,
     ...providerDefaults,

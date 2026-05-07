@@ -44,7 +44,7 @@ pnpm add @reactleaf/modal
 Import the default stylesheet once in your app entry if you want the built-in layer and dim styles.
 
 ```ts
-import '@reactleaf/modal/style.css';
+import "@reactleaf/modal/style.css";
 ```
 
 ## Quick start
@@ -55,7 +55,7 @@ import '@reactleaf/modal/style.css';
 
 ```ts
 // modal.ts
-import { ModalManager } from '@reactleaf/modal';
+import { ModalManager } from "@reactleaf/modal";
 
 export const modal = new ModalManager();
 ```
@@ -65,8 +65,8 @@ export const modal = new ModalManager();
 Pass your manager into `ModalProvider`.
 
 ```tsx
-import { ModalProvider } from '@reactleaf/modal';
-import { modal } from './modal';
+import { ModalProvider } from "@reactleaf/modal";
+import { modal } from "./modal";
 
 function App() {
   return (
@@ -88,7 +88,7 @@ function App() {
 Modals are plain React components. `visible` is useful for open/close transitions; `closeSelf(result)` closes the current modal and resolves the `modal.open(...)` promise with `result`. The generic passed to `useModalInstance<Result>()` is only used to restrict the value accepted by `closeSelf(...)`.
 
 ```tsx
-import { ModalComponent, useModalInstance } from '@reactleaf/modal';
+import { ModalComponent, useModalInstance } from "@reactleaf/modal";
 
 export type ConfirmProps = {
   message: string;
@@ -98,7 +98,7 @@ export const Confirm: ModalComponent<ConfirmProps, boolean> = ({ message }) => {
   const { visible, closeSelf } = useModalInstance<boolean>();
 
   return (
-    <div className={visible ? 'confirm visible' : 'confirm'}>
+    <div className={visible ? "confirm visible" : "confirm"}>
       <p>{message}</p>
       <button type="button" onClick={() => void closeSelf(false)}>
         Cancel
@@ -119,12 +119,12 @@ Confirm.layerOptions = {
 ### 4. Open a modal and read the result
 
 ```tsx
-import { modal } from './modal';
-import Confirm from './modals/Confirm';
+import { modal } from "./modal";
+import Confirm from "./modals/Confirm";
 
 async function deleteItem() {
   const confirmed = await modal.open(Confirm, {
-    message: 'Delete this item?',
+    message: "Delete this item?",
   });
 
   if (!confirmed) return;
@@ -140,7 +140,7 @@ async function deleteItem() {
 Creates a controller that owns the modal stack.
 
 ```ts
-import { ModalManager } from '@reactleaf/modal';
+import { ModalManager } from "@reactleaf/modal";
 
 export const modal = new ModalManager();
 ```
@@ -174,7 +174,7 @@ Opens a modal and returns a `Promise` that resolves when that layer closes.
 
 ```ts
 const result = await modal.open(Alert, {
-  message: 'Saved.',
+  message: "Saved.",
 });
 ```
 
@@ -189,7 +189,7 @@ When a modal component is typed as `ModalComponent<Props, Result>`, `modal.open(
 
 ```ts
 const name = await modal.open(Prompt, {
-  title: 'Enter a name',
+  title: "Enter a name",
 });
 ```
 
@@ -248,7 +248,7 @@ Returns whether at least one modal is open.
 
 ```ts
 if (modal.hasOpenModals()) {
-  console.log('A modal is open');
+  console.log("A modal is open");
 }
 ```
 
@@ -260,7 +260,7 @@ Returns a read-only snapshot of the current stack.
 const opened = modal.getSnapshot();
 
 if (opened.some((item) => item.Component === Confirm)) {
-  console.log('Confirm is already open');
+  console.log("Confirm is already open");
 }
 ```
 
@@ -272,7 +272,7 @@ Subscribes to stack changes. Uncommon in app code; useful for debug panels or ex
 
 ```ts
 const unsubscribe = modal.subscribe((stack) => {
-  console.log('open modals:', stack.length);
+  console.log("open modals:", stack.length);
 });
 
 unsubscribe();
@@ -299,8 +299,8 @@ Exposed values:
 Keeps the current layer (same `id`, backdrop behavior) and swaps the rendered content to another modal component. Resolves with the **new** modal’s result when that layer eventually closes. The **previous** `open()` promise resolves to `MODAL_REPLACED`.
 
 ```tsx
-import { useModalInstance } from '@reactleaf/modal';
-import CodeModal from './CodeModal';
+import { useModalInstance } from "@reactleaf/modal";
+import CodeModal from "./CodeModal";
 
 function EmailModal({ onVerified }: EmailModalProps) {
   const { replaceSelf } = useModalInstance();
@@ -347,18 +347,15 @@ Layer options merge in this order; later values override earlier ones.
 3. Options passed to `modal.open(...)`
 
 ```tsx
-<ModalProvider
-  manager={modal}
-  defaultLayerOptions={{ closeOnOutsideClick: true, dim: true }}
->
+<ModalProvider manager={modal} defaultLayerOptions={{ closeOnOutsideClick: true, dim: true }}>
   <App />
-</ModalProvider>
+</ModalProvider>;
 
 Confirm.layerOptions = {
   closeOnOutsideClick: false,
 };
 
-await modal.open(Confirm, { message: 'Continue?' }, { className: 'confirm-layer' });
+await modal.open(Confirm, { message: "Continue?" }, { className: "confirm-layer" });
 ```
 
 ### Component-level defaults
@@ -366,7 +363,7 @@ await modal.open(Confirm, { message: 'Continue?' }, { className: 'confirm-layer'
 `ModalComponent<Props, Result>` lets you attach `layerOptions` to the component and expose the result type that `modal.open(...)` should infer.
 
 ```tsx
-import { ModalComponent } from '@reactleaf/modal';
+import { ModalComponent } from "@reactleaf/modal";
 
 type AlertProps = {
   message: string;
@@ -387,7 +384,7 @@ Alert.layerOptions = {
 
 ```tsx
 const confirmed = await modal.open(Confirm, {
-  message: 'Are you sure you want to delete this?',
+  message: "Are you sure you want to delete this?",
 });
 
 if (confirmed) {
@@ -399,8 +396,8 @@ if (confirmed) {
 
 ```tsx
 const title = await modal.open(Prompt, {
-  title: 'Document title',
-  placeholder: 'Enter a title',
+  title: "Document title",
+  placeholder: "Enter a title",
 });
 
 if (title) {
@@ -411,21 +408,17 @@ if (title) {
 ### `AbortController`
 
 ```tsx
-import { MODAL_ABORTED } from '@reactleaf/modal';
+import { MODAL_ABORTED } from "@reactleaf/modal";
 
 const controller = new AbortController();
 const timer = window.setTimeout(() => controller.abort(), 3000);
 
-const result = await modal.open(
-  Alert,
-  { message: 'Closes automatically in 3s.' },
-  { abortController: controller },
-);
+const result = await modal.open(Alert, { message: "Closes automatically in 3s." }, { abortController: controller });
 
 window.clearTimeout(timer);
 
 if (result === MODAL_ABORTED) {
-  console.log('Modal closed via abort');
+  console.log("Modal closed via abort");
 }
 ```
 
@@ -434,11 +427,11 @@ if (result === MODAL_ABORTED) {
 Anywhere you can import the manager, you can open a modal even outside components.
 
 ```ts
-import { modal } from './modal';
-import Alert from './modals/Alert';
+import { modal } from "./modal";
+import Alert from "./modals/Alert";
 
-window.addEventListener('error', () => {
-  void modal.open(Alert, { message: 'Something went wrong.' });
+window.addEventListener("error", () => {
+  void modal.open(Alert, { message: "Something went wrong." });
 });
 ```
 
@@ -469,7 +462,7 @@ When you need a close animation, set `closeDelay` to your CSS transition duratio
   transition: transform 180ms ease;
 }
 
-.modal-layer[data-content-visible='true'] > * {
+.modal-layer[data-content-visible="true"] > * {
   transform: translateY(0) scale(1);
 }
 ```
@@ -495,7 +488,7 @@ const { visible } = useModalInstance();
 Import the default CSS:
 
 ```ts
-import '@reactleaf/modal/style.css';
+import "@reactleaf/modal/style.css";
 ```
 
 Useful selectors:
@@ -516,7 +509,7 @@ Useful selectors:
   background: rgba(0, 0, 0, 0.6);
 }
 
-.modal-layer[data-content-visible='true'] > * {
+.modal-layer[data-content-visible="true"] > * {
   transform: translateY(0) scale(1);
 }
 ```
@@ -524,13 +517,13 @@ Useful selectors:
 Use `className` on a layer for custom wrapper classes.
 
 ```ts
-await modal.open(Confirm, { message: 'Continue?' }, { className: 'danger-modal-layer' });
+await modal.open(Confirm, { message: "Continue?" }, { className: "danger-modal-layer" });
 ```
 
 Use a string `dim` to replace the default dim class.
 
 ```ts
-await modal.open(Confirm, { message: 'Continue?' }, { dim: 'danger-dim' });
+await modal.open(Confirm, { message: "Continue?" }, { dim: "danger-dim" });
 ```
 
 ## Smooth sequential flow
@@ -538,10 +531,10 @@ await modal.open(Confirm, { message: 'Continue?' }, { dim: 'danger-dim' });
 `replaceSelf(...)` is a good fit when a flow should move to the next step in the same shell—e.g. email field, then verification code—without the backdrop flashing off and on.
 
 ```tsx
-import { type ModalComponent, useModalInstance } from '@reactleaf/modal';
-import { modal } from './modal';
-import CodeModal from './CodeModal';
-import EmailModal from './EmailModal';
+import { type ModalComponent, useModalInstance } from "@reactleaf/modal";
+import { modal } from "./modal";
+import CodeModal from "./CodeModal";
+import EmailModal from "./EmailModal";
 
 type EmailModalProps = {
   onVerified: () => Promise<void>;
@@ -574,7 +567,11 @@ The earlier `open()` promise resolves to `MODAL_REPLACED`; the promise returned 
 
 ## Live demo
 
-Run the app under `[docs/app](./docs/app)`:
+Try the live demo on GitHub Pages:
+
+https://reactleaf.github.io/modal/
+
+To run the demo locally:
 
 ```sh
 pnpm install
